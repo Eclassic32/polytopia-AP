@@ -1,6 +1,6 @@
 using BepInEx.Logging;
 
-namespace PolyScriptTemplate;
+namespace PolytopiaArchipelagoMW;
 public static class Main
 {
     public static void Load(ManualLogSource logger)
