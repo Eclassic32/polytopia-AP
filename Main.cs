@@ -8,9 +8,7 @@ using Il2CppInterop.Runtime.InteropTypes;
 namespace PolytopiaArchipelagoMW;
 public static class Main
 {
-#pragma warning disable CS8618
-    private static ManualLogSource logger;
-#pragma warning restore CS8618
+    private static ManualLogSource logger = new("apmw: Main");
 
     private static bool isConnectedToArchipelago = false;
     private static bool shouldHidePerfectionAndDomination = true;
@@ -29,10 +27,8 @@ public static class Main
 
         Main.logger = logger;
         isConnectedToArchipelago = true; // TODO: Implement actual connection check to Archipelago server
-        logger.LogInfo("Polytopia Archipelago Mod Loaded");
+        logger.LogInfo("Archipelago Mod Loaded");
     }
-
-    
 
     // Pick Your Tribe - Disabling Tribes Not Enabled in Archipelago
     [HarmonyPostfix]
@@ -42,22 +38,6 @@ public static class Main
         __result = enabledTribes.Contains(tribeType) ? __result : false;
 
         // logger.LogInfo($"GameSettings.IsTribeEnabled called for tribe: {tribeType}. Result: {__result}");
-    }
-
-    // Jump from New Game to Creative Mode Screen
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(GameModeScreen_UI2), nameof(GameModeScreen_UI2.OnShow))]
-    private static bool GameModeScreen_UI2_JumpToCreative_Prefix(GameModeScreen_UI2 __instance)
-    {
-        if (!isConnectedToArchipelago)
-        {
-            logger.LogInfo("GameModeScreen_UI2.OnShow called. Not connected to Archipelago, skipping custom logic.");
-            return true;
-        }
-
-        __instance.OnCustom();
-        logger.LogInfo("GameModeScreen_UI2.OnShow called. Jumped to Creative Mode screen.");
-        return false;
     }
 
     // Triggers on Enabling/Disabling tribe
@@ -101,23 +81,6 @@ public static class Main
         }
     }
     
-
-    // --- EXPLORATION ---
-
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(GameModeUtils), nameof(GameModeUtils.GetTitle))]
-    private static void GameModeUtils_GetTitle_Prefix(GameMode gameMode, ref string __result)
-    {
-        logger.LogInfo($"GameModeUtils.GetTitle called for game mode: {gameMode}. Result: {__result}");
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(GameModeScreen_UI2), nameof(GameModeScreen_UI2.OnCustom))]
-    private static void GameModeScreen_UI2_OnCustom_Prefix(GameModeScreen_UI2 __instance)
-    {
-        logger.LogInfo("GameModeScreen_UI2.OnCustom called.");
-    }
-
     // Game Over Action Execute
     // !!! TRIGGERS ON LAST TURN, NOT ON GAME OVER SCREEN !!!
     [HarmonyPostfix]

@@ -8,9 +8,7 @@ using Il2CppInterop.Runtime.InteropTypes;
 namespace OtherSnippets;
 public static class OtherSnippets
 {
-#pragma warning disable CS8618
-    private static ManualLogSource logger;
-#pragma warning restore CS8618
+    private static ManualLogSource logger = new("apmw: OtherSnippets");
 
     private static bool isConnectedToArchipelago = false;
     private static bool shouldHidePerfectionAndDomination = true;
