@@ -77,8 +77,7 @@ public static class Main
         uint finalScore = player.score;
         logger.LogInfo("EndMatchCommand.Execute called.");
         logger.LogInfo($"↪ Final Score: {finalScore}");
-        logger.LogInfo($"↪ Player {(player == winner ? "won" : "lost")} the game. Winner: {winner.GetNameInternal()} ({winner.tribe})");
-        
+        logger.LogInfo($"↪ Player {(player.Id == winner.Id ? "won" : "lost")} the game. Winner: {winner.GetNameInternal()} ({winner.tribe})");
     }
 
 
