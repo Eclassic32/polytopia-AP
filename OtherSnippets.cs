@@ -84,6 +84,57 @@ public static class OtherSnippets
         {
             logger.LogInfo($"TribePickerScreen_UI2.OnTribeEnabledChanged called for tribe: {idx} ({(TribeType)idx}).");
         }
+
+        // Fires on any score set durning the game, (fires a ton)
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ScoreContainer), nameof(ScoreContainer.SetScore))]
+        private static void ScoreContainer_SetScore_Prefix(ScoreContainer __instance, float score, int bestScore)
+        {
+            logger.LogInfo($"ScoreContainer.SetScore called. Score: {score}; Best Score: {bestScore}");
+        }
+
+        // Called after ending the turn?
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(UIWorldScoreBase), nameof(UIWorldScoreBase.Update))]
+        private static void UIWorldScoreBase_Update_Prefix(UIWorldScoreBase __instance)
+        {
+            logger.LogInfo($"UIWorldScoreBase.Update called.");
+        }
+
+        // Main Menu > High Score (online scores per tribe)
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(HighScoreScreen), nameof(HighScoreScreen.Show))]
+        private static void HighScoreScreen_Show_Prefix(HighScoreScreen __instance, bool instant)
+        {
+            logger.LogInfo($"HighScoreScreen.Show called.");
+        }
+        
+        // Main Menu > Throne Room (stats screen)
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ThroneRoomScreen), nameof(ThroneRoomScreen.Show))]
+        private static void ThroneRoomScreen_Show_Prefix(ThroneRoomScreen __instance, bool instant)
+        {
+            logger.LogInfo($"ThroneRoomScreen.Show called.");
+        }
+
+        // Called on both Player and AI units
+        // Called once when new unit is created/destroyed, __result is the score of that unit type
+        // Called twice when water unit upgraded/landed, once land unit score, once water unit score
+        // Called once per PLAYER unit on Game Over Scores screen
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ScoreSheet), nameof(ScoreSheet.GetUnitScore))]
+        private static void ScoreSheet_GetUnitScore_Postfix(ScoreSheet __instance, UnitState unitState, GameState gameState, ref int __result)
+        {
+            logger.LogInfo($"ScoreSheet.GetUnitScore called. UnitState: {unitState}; GameState: {gameState}; Result: {__result}");
+        }
+
+        // Called on actuall UI Score update 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ScoreContainer), nameof(ScoreContainer.UpdateText))]
+        private static void ScoreContainer_UpdateText_Prefix(ScoreContainer __instance)
+        {
+            // logger.LogInfo($"ScoreContainer.UpdateText called. {__instance.score}");
+        }
     }
 
     private static class Scripts

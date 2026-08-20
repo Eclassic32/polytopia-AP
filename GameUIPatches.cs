@@ -41,6 +41,7 @@ public static class GameUIPatches
 
     // --- EXPLORATION ---
 
+    // In game > Game Stats
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameModeUtils), nameof(GameModeUtils.GetTitle))]
     private static void GameModeUtils_GetTitle_Prefix(GameMode gameMode, ref string __result)

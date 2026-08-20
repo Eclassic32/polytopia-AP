@@ -66,29 +66,25 @@ public static class Main
         => SelectTribePopup_HideDisableBtn(__instance, origin);
 
 
-    // Later Usage?
-    private static void TribeHintLogic(TribeType tribe)
+    // Game Over Screen - Logging Final Score and Winner
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(EndMatchCommand), nameof(EndMatchCommand.Execute))]
+    private static void EndMatchCommand_Execute_Postfix(EndMatchCommand __instance, GameState state)
     {
-        logger.LogInfo($"↪ Hint button clicked for tribe {tribe}. Sending hint to Archipelago.");
-                apchat($"!hint Tribe - {tribe}");
+        PlayerState player = state.GetFirstHumanPlayer();
+        state.TryGetWinner(out PlayerState winner);
+
+        uint finalScore = player.score;
+        logger.LogInfo("EndMatchCommand.Execute called.");
+        logger.LogInfo($"↪ Final Score: {finalScore}");
+        logger.LogInfo($"↪ Player {(player == winner ? "won" : "lost")} the game. Winner: {winner.GetNameInternal()} ({winner.tribe})");
+        
     }
 
-    private static void apchat(string message) // TODO: Implement actual chat functionality with Archipelago server
-    {
-        if (isConnectedToArchipelago)
-        {
-            logger.LogInfo($"[APCHAT] {message}");
-        }
-    }
+
+    // --- EXPLORATION ---
     
-    // Game Over Action Execute
-    // !!! TRIGGERS ON LAST TURN, NOT ON GAME OVER SCREEN !!!
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameOverAction), nameof(GameOverAction.Execute))]
-    private static void GameOverAction_Execute_Postfix(GameOverAction __instance, GameState state)
-    {
-        logger.LogInfo("GameOverAction.Execute called. Game over.");
-        logger.LogInfo($"Game state: {state.ToString()}");
-        // logger.LogInfo($"Winner: {state.Winner}");
-    }
+
+
+
 }
