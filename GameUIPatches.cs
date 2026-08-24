@@ -11,7 +11,7 @@ public static class GameUIPatches
     private static ManualLogSource logger = new("apmw: GameUIPatches");
 
     private static bool isConnectedToArchipelago = false;
-    private static bool shouldHidePerfectionAndDomination = true;
+    private static bool jumpIntoCustomGameMode = true;
 
     public static void Load(ManualLogSource logger)
     {

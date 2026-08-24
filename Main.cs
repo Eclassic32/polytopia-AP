@@ -8,10 +8,8 @@ using Il2CppInterop.Runtime.InteropTypes;
 namespace PolytopiaArchipelagoMW;
 public static class Main
 {
-    private static ManualLogSource logger = new("apmw: Main");
+    public static ManualLogSource logger = new("apmw: Main");
 
-    private static bool isConnectedToArchipelago = false;
-    private static bool shouldHidePerfectionAndDomination = true;
     private static TribeType[] enabledTribes = new TribeType[]
     {
         TribeType.Xinxi,
@@ -26,7 +24,7 @@ public static class Main
         Harmony.CreateAndPatchAll(typeof(Main));
 
         Main.logger = logger;
-        isConnectedToArchipelago = true; // TODO: Implement actual connection check to Archipelago server
+        Archipelago.isConnectedToArchipelago = true; // TODO: Implement actual connection check to Archipelago server
         logger.LogInfo("Archipelago Mod Loaded");
     }
 
@@ -46,7 +44,7 @@ public static class Main
         int idx = __instance.tribeData.idx;
         logger.LogInfo($"SelectTribePopup.Show called for tribe: {idx} ({(TribeType)idx}).");
 
-        if (isConnectedToArchipelago && !enabledTribes.Contains((TribeType)idx))
+        if (Archipelago.isConnectedToArchipelago && !enabledTribes.Contains((TribeType)idx))
         {
             logger.LogInfo($"↪ Tribe {(TribeType)idx} is missing in Archipelago.");
             UIToggleButton disableButton = __instance.disableButton;
