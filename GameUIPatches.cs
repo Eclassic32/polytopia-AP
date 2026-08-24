@@ -41,6 +41,36 @@ public static class GameUIPatches
 
     // --- EXPLORATION ---
 
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.RunLayout))]
+    private static void StartScreen_UI2_RunLayout_Prefix(StartScreen_UI2 __instance)
+    {
+        logger.LogInfo("StartScreen_UI2.RunLayout called.");
+        var weeklyButton =  __instance.weeklyChallengeButton.button;
+        // weeklyButton.OnDown = new UIButtonBase.ButtonAction(() =>
+        // {
+        //     logger.LogInfo("StartScreen_UI2.RunLayout: Weekly Challenge button clicked.");
+        //     if (isConnectedToArchipelago)
+        //     {
+        //         logger.LogInfo("↪ Connected to Archipelago, skipping Weekly Challenge.");
+        //         return;
+        //     }
+        //     weeklyButton.OnDown.Invoke();
+        // });
+    }
+
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.OnWeeklyChallengeClicked))]
+    // private static bool StartScreen_UI2_OnWeeklyChallengeClicked_Prefix(StartScreen_UI2 __instance)
+    // {
+    //     logger.LogInfo("StartScreen_UI2.OnWeeklyChallengeClicked called.");
+    //     return true;
+    // }
+
+   
+
+
+
     // In game > Game Stats
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameModeUtils), nameof(GameModeUtils.GetTitle))]

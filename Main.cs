@@ -24,7 +24,7 @@ public static class Main
         Harmony.CreateAndPatchAll(typeof(Main));
 
         Main.logger = logger;
-        Archipelago.isConnectedToArchipelago = true; // TODO: Implement actual connection check to Archipelago server
+        // Archipelago.isConnectedToArchipelago = true; // TODO: Implement actual connection check to Archipelago server
         logger.LogInfo("Archipelago Mod Loaded");
     }
 
