@@ -3,6 +3,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <RestoreAdditionalProjectSources>
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json;
@@ -14,5 +15,24 @@
     <ItemGroup>
         <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.1" />
         <PackageReference Include="PolyMod" Version="*" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.46">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
+
+    <Target Name="ILRepackMerge" AfterTargets="Build">
+        <ItemGroup>
+            <MergeAssemblies Include="$(TargetDir)Archipelago.MultiClient.Net.dll" />
+            <MergeAssemblies Include="$(TargetDir)Newtonsoft.Json.dll" />
+        </ItemGroup>
+        <ILRepack
+            Parallel="true"
+            Internalize="true"
+            InputAssemblies="$(TargetPath);@(MergeAssemblies)"
+            OutputFile="$(TargetPath)"
+            TargetKind="Dll"
+            LibraryPath="$(TargetDir)" />
+    </Target>
 </Project>
