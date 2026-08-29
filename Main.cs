@@ -44,7 +44,7 @@ public static class Main
         int idx = __instance.tribeData.idx;
         logger.LogInfo($"SelectTribePopup.Show called for tribe: {idx} ({(TribeType)idx}).");
 
-        if (Archipelago.isConnectedToArchipelago && !enabledTribes.Contains((TribeType)idx))
+        if (Archipelago.isConnected && !enabledTribes.Contains((TribeType)idx))
         {
             logger.LogInfo($"↪ Tribe {(TribeType)idx} is missing in Archipelago.");
             UIToggleButton disableButton = __instance.disableButton;

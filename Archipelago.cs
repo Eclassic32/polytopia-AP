@@ -6,24 +6,19 @@ namespace PolytopiaArchipelagoMW;
 public static class Archipelago
 {
     private static ManualLogSource logger = Main.logger;
-    public static bool isConnectedToArchipelago = false;
+    public static bool isConnected = false;
     public static LoginSuccessful? slotData;
     private static readonly string game_name = "The Battle of Polytopia";
 
-    // public static void Load(ManualLogSource logger)
-    // {
-    //     Archipelago.logger = logger;
-    //     logger.LogInfo("Archipelago.MultiClient.Net Loaded");
-    // }
-
-    public async static Task<bool> ConnectToRoom(string URL, int port, string slot_name, string password)
+    public async static Task<bool> ConnectToRoom(string URL, int port, string slot_name, string? password)
     {
         LoginResult result;
         var session = ArchipelagoSessionFactory.CreateSession(URL, port);
+        session.Socket.ErrorReceived += OnErrorReceived;
 
         try {
             result = session.TryConnectAndLogin(game: game_name, name: slot_name, 
-                             itemsHandlingFlags: ItemsHandlingFlags.AllItems, password: password);
+                             itemsHandlingFlags: ItemsHandlingFlags.AllItems, password: password, requestSlotData: false);
         } catch (Exception e) {
             result = new LoginFailure(e.GetBaseException().Message);
         }
@@ -45,8 +40,15 @@ public static class Archipelago
         }
 
         slotData = (LoginSuccessful)result;
-        isConnectedToArchipelago = true;
+        isConnected = true;
         logger.LogInfo($"Connected to Archipelago Room: {URL}:{port} as {slot_name}");
         return true;
+
+        
+    }
+
+    private static void OnErrorReceived(Exception e, string message)
+    {
+        logger.LogError($"AP Connection Error: {message}\n{e}");
     }
 }

@@ -43,7 +43,7 @@ public static class APUI
 
         archipelagoModButton = UILibrary.NewRoundButton(transform).SetStyle(UIButtonBase_UI2.ButtonStyle.Suggested);
         archipelagoModButton.bg.sprite = Registry.GetSprite("ap-logo__.png");
-        archipelagoModButton.OnClickedSignal.Add(DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(ShowPolyModHub));
+        archipelagoModButton.OnClickedSignal.Add(DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(ShowArchipelagoHub));
     }
 
     [HarmonyPostfix]
@@ -52,19 +52,74 @@ public static class APUI
     {
         if(archipelagoModButton == null)
         {
-            logger.LogWarning("PolyMod Hub button is null when running layout!");
+            logger.LogWarning("Archipelago Hub button is null when running layout!");
             return;
         }
         archipelagoModButton.iconContainer.gameObject.SetActive(false);
         archipelagoModButton.outline.gameObject.SetActive(false);
         archipelagoModButton.bg.color = Color.white;
-        archipelagoModButton.Text = Localization.Get("apmw.hub");
+        archipelagoModButton.Text = Localization.Get("apmw.hub.btn");
 		float num = 50f;
 		archipelagoModButton.SetPosition(screenSize.safeRect.Left + (num * 2.5f), screenSize.safeRect.Top - num);
     }
 
-    private static void ShowPolyModHub()
+    internal static void ShowArchipelagoHub()
     {
-        logger.LogInfo("ShowPolyModHub called.");
+        BasicPopupLegacy popup = GetBasicPopupLegacy();
+        popup.Header = Localization.Get("apmw.hub");
+
+        List<PopupButtonData> popupButtons = new() {
+            new("buttons.back", closesPopup: true),
+        };
+
+        if (!Archipelago.isConnected) {
+            popup.Description = Localization.Get("apmw.disconnected");
+            PopupButtonData btn = new(
+                "apmw.connect.btn",
+                callback: DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(ConnectToArchipelago)
+            );
+
+            popupButtons.Add(btn);
+        } else {
+            popup.Description = Localization.Get("apmw.connected");
+            popupButtons.Add(new(
+                "apmw.disconnect.btn",
+                callback: DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(DisconnectFromArchipelago)
+            ));
+        }
+        
+        
+        async void ConnectToArchipelago()
+        {
+            logger.LogInfo("ConnectToArchipelago called.");
+            bool res = await Archipelago.ConnectToRoom("localhost", 38281, "Small", null);
+            if (res) {
+                logger.LogInfo(Archipelago.slotData?.ToString());
+            }
+        }
+
+        void DisconnectFromArchipelago()
+        {
+            logger.LogInfo("DisconnectFromArchipelago called.");
+        }
+
+        popup.buttonData = popupButtons.ToArray();
+        popup.Show();
     }
+
+    // copied from https://github.com/PolyModdingTeam/PolyMod/blob/main/src/Managers/Visual.cs
+    // why is there so many internal methods :sob:
+    internal static BasicPopupLegacy GetBasicPopupLegacy()
+	{
+		WhatsNewPopup whatsNewPopup = PopupManager.GetWhatsNewPopup();
+		BasicPopupLegacy original = PopupManager.instance.popupPrefabs[29].Cast<BasicPopupLegacy>();
+		BasicPopupLegacy basicPopupLegacy = UnityEngine.Object.Instantiate(original, PopupManager.instance.transform);
+		basicPopupLegacy.buttonContainer = GameObject.Instantiate(whatsNewPopup.buttonContainer, basicPopupLegacy.transform);
+		basicPopupLegacy.popupId = "basicPopupLegacy";
+		basicPopupLegacy.popupManager = PopupManager.instance;
+		basicPopupLegacy.Init();
+		basicPopupLegacy.identifier = null;
+		basicPopupLegacy.rectTransform.SetAsLastSibling();
+		return basicPopupLegacy;
+	}
 }
