@@ -4,6 +4,8 @@ using PolytopiaBackendBase.Common;
 using PolytopiaBackendBase.Game;
 using UnityEngine;
 using Il2CppInterop.Runtime.InteropTypes;
+using Il2CppInterop.Runtime;
+using UnityEngine.Rendering;
 
 namespace PolytopiaArchipelagoMW;
 public static class GameUIPatches
@@ -19,6 +21,16 @@ public static class GameUIPatches
     }
 
     // Jump from New Game to Creative Mode Screen
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.ClickNewGame))]
+    // private static bool StartScreen_UI2_JumpToCreative_Postfix(StartScreen_UI2 __instance)
+    // {
+    //     if (!Archipelago.isConnected) { return true; }
+    //     logger.LogInfo("GameModeScreen_UI2.OnShow called. Jumping to Creative Mode screen.");
+    //     __instance.
+    //     return false;
+    // }
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameModeScreen_UI2), nameof(GameModeScreen_UI2.OnShow))]
     private static bool GameModeScreen_UI2_JumpToCreative_Prefix(GameModeScreen_UI2 __instance)
@@ -37,36 +49,6 @@ public static class GameUIPatches
 
     // --- EXPLORATION ---
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.RunLayout))]
-    private static void StartScreen_UI2_RunLayout_Prefix(StartScreen_UI2 __instance)
-    {
-        logger.LogInfo("StartScreen_UI2.RunLayout called.");
-        var weeklyButton =  __instance.weeklyChallengeButton.button;
-        // weeklyButton.OnDown = new UIButtonBase.ButtonAction(() =>
-        // {
-        //     logger.LogInfo("StartScreen_UI2.RunLayout: Weekly Challenge button clicked.");
-        //     if (isConnectedToArchipelago)
-        //     {
-        //         logger.LogInfo("↪ Connected to Archipelago, skipping Weekly Challenge.");
-        //         return;
-        //     }
-        //     weeklyButton.OnDown.Invoke();
-        // });
-    }
-
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.OnWeeklyChallengeClicked))]
-    // private static bool StartScreen_UI2_OnWeeklyChallengeClicked_Prefix(StartScreen_UI2 __instance)
-    // {
-    //     logger.LogInfo("StartScreen_UI2.OnWeeklyChallengeClicked called.");
-    //     return true;
-    // }
-
-   
-
-
-
     // In game > Game Stats
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameModeUtils), nameof(GameModeUtils.GetTitle))]
@@ -83,18 +65,12 @@ public static class GameUIPatches
     // private static void TribePickerScreen_UI2_Init_Postfix(TribePickerScreen_UI2 __instance, RectTransform transform)
     // {
     //     logger.LogInfo($"TribePickerScreen_UI2.Init called");
-    //     backButton = __instance.backButton;
+    //     var backButton = __instance.backButton;
+    //     backButton.OnClickedSignal.Add(DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(JumpToMain));
     // }
 
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(UIRoundButton_UI2), nameof(UIRoundButton_UI2.OnPointerClick))]
-    // private static bool UIRoundButton_UI2_OnPointerClick_Prefix(UIRoundButton_UI2 __instance)
+    // internal static void JumpToMain(TribePickerScreen_UI2 __instance)
     // {
-    //     logger.LogInfo($"UIRoundButton_UI2.OnPointerClick called for button: {__instance.name}");
-    //     if (__instance == backButton)
-    //     {
-    //         logger.LogInfo($"↪ Back button clicked. Returning to previous screen.");
-    //     }
-    //     return true;
+    //     __instance.
     // }
 }
