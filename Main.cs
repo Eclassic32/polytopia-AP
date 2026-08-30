@@ -33,6 +33,7 @@ public static class Main
     [HarmonyPatch(typeof(GameSettings), nameof(GameSettings.IsTribeEnabled))]
     private static void GameSettings_IsTribeEnabled_Postfix(GameSettings __instance, TribeType tribeType, ref bool __result)
     {
+        if (!Archipelago.isConnected || Archipelago.slotData is null) { return; }
         __result = enabledTribes.Contains(tribeType) ? __result : false;
 
         // logger.LogInfo($"GameSettings.IsTribeEnabled called for tribe: {tribeType}. Result: {__result}");

@@ -19,7 +19,6 @@ namespace PolytopiaArchipelagoMW;
 public static class APUI
 {
     private static ManualLogSource logger = new("apmw: APUI");
-    private static bool isConnectedToArchipelago = false;
 
     private const string HEADER_PREFIX = "<align=\"center\"><size=150%><b>";
     private const string HEADER_POSTFIX = "</b></size><align=\"left\">";

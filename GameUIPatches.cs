@@ -10,15 +10,11 @@ public static class GameUIPatches
 {
     private static ManualLogSource logger = new("apmw: GameUIPatches");
 
-    private static bool isConnectedToArchipelago = false;
-    private static bool jumpIntoCustomGameMode = true;
-
     public static void Load(ManualLogSource logger)
     {
         Harmony.CreateAndPatchAll(typeof(GameUIPatches));
 
         GameUIPatches.logger = logger;
-        isConnectedToArchipelago = true; // TODO: Implement actual connection check to Archipelago server
         logger.LogInfo("GameUIPatches loaded");
     }
 
