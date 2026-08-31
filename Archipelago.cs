@@ -5,29 +5,30 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json.Linq;
+using PolytopiaBackendBase.Common;
 
 namespace PolytopiaArchipelagoMW;
 public static class Archipelago
 {
     private static readonly ManualLogSource logger = Main.logger;
     private static readonly string game_name = "The Battle of Polytopia";
-    public static bool isConnected = false;
-    public static ArchipelagoSession? session;
-    public static LoginSuccessful? slotData;
-    public static string[] PlayableTribes { get; set; } = Array.Empty<string>();
-    public static int UniqueTribesWins { get; set; } = -1;
+    public static bool IsConnected {get; private set;} = false;
+    public static ArchipelagoSession? Session {get; private set;}
+    public static LoginSuccessful? SlotData {get; private set;}
+    private static string[] PlayableTribes = Array.Empty<string>();
+    public static int UniqueTribesWins { get; private set; } = -1;
 
 
     public async static Task<bool> ConnectToRoom(string URL, int port, string slot_name, string? password)
     {
         LoginResult? result = null;
-        session = ArchipelagoSessionFactory.CreateSession(URL, port);
-        session.Socket.ErrorReceived += OnErrorReceived;
-        session.MessageLog.OnMessageReceived += OnMessageReceived;
-        session.Items.ItemReceived += OnItemReceived;
+        Session = ArchipelagoSessionFactory.CreateSession(URL, port);
+        Session.Socket.ErrorReceived += OnErrorReceived;
+        Session.MessageLog.OnMessageReceived += OnMessageReceived;
+        Session.Items.ItemReceived += OnItemReceived;
 
         try {
-            result = session.TryConnectAndLogin(game: game_name, name: slot_name, 
+            result = Session.TryConnectAndLogin(game: game_name, name: slot_name, 
                              itemsHandlingFlags: ItemsHandlingFlags.AllItems, password: password, requestSlotData: true);
         } catch (Exception e) {
             if (result is null) {
@@ -53,16 +54,40 @@ public static class Archipelago
             return false;
         }
 
-        slotData = (LoginSuccessful)result;
-        isConnected = true;
+        SlotData = (LoginSuccessful)result;
+        IsConnected = true;
         logger.LogInfo($"Connected to Archipelago Room: {URL}:{port} as {slot_name}");
 
-        PlayableTribes = ((JArray)slotData.SlotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
+        PlayableTribes = ((JArray)SlotData.SlotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
         logger.LogInfo($"Slot Data - Playable Tribes: {string.Join(", ", PlayableTribes)}");
 
-        UniqueTribesWins = (int)(long)slotData.SlotData["unique_tribes_wins"];
+        UniqueTribesWins = (int)(long)SlotData.SlotData["unique_tribes_wins"];
         logger.LogInfo($"Slot Data - Unique Tribes Wins: {UniqueTribesWins}");
         return true;
+    }
+
+    public static TribeType[] GetPlayableTribes()
+    {
+        return PlayableTribes.Select(t => (TribeType)Enum.Parse(typeof(TribeType), t)).ToArray();
+    }
+
+    public static TribeType[] GetEnabledTribes()
+    {
+        TribeType[] result = Array.Empty<TribeType>();
+        if (!IsConnected || Session is null) { return result; }
+        var allItems = Session.Items.AllItemsReceived;
+        foreach (var item in allItems)
+        {
+            if (item.ItemName.StartsWith("Tribe Unlock - "))
+            {
+                string tribeName = item.ItemName["Tribe Unlock - ".Length..];
+                if (Enum.TryParse(tribeName, out TribeType tribeType))
+                {
+                    result = result.Append(tribeType).ToArray();
+                }
+            }
+        }
+        return result;
     }
 
     private static void OnItemReceived(ReceivedItemsHelper helper)

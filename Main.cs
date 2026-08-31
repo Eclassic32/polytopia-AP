@@ -33,9 +33,11 @@ public static class Main
     [HarmonyPatch(typeof(GameSettings), nameof(GameSettings.IsTribeEnabled))]
     private static void GameSettings_IsTribeEnabled_Postfix(GameSettings __instance, TribeType tribeType, ref bool __result)
     {
-        if (!Archipelago.isConnected || Archipelago.slotData is null) { return; }
-        __result = enabledTribes.Contains(tribeType) ? __result : false;
+        if (!Archipelago.IsConnected || Archipelago.SlotData is null) { return; }
+        __result = Archipelago.GetEnabledTribes().Contains(tribeType) && __result;
 
+        // logger.LogInfo($"PlayableTribes: {string.Join(", ", Archipelago.GetPlayableTribes())}");
+        // logger.LogInfo($"EnabledTribes: {string.Join(", ", Archipelago.GetEnabledTribes())}");
         // logger.LogInfo($"GameSettings.IsTribeEnabled called for tribe: {tribeType}. Result: {__result}");
     }
 
@@ -45,13 +47,12 @@ public static class Main
         int idx = __instance.tribeData.idx;
         logger.LogInfo($"SelectTribePopup.Show called for tribe: {idx} ({(TribeType)idx}).");
 
-        if (Archipelago.isConnected && !enabledTribes.Contains((TribeType)idx))
-        {
-            logger.LogInfo($"↪ Tribe {(TribeType)idx} is missing in Archipelago.");
-            UIToggleButton disableButton = __instance.disableButton;
-            disableButton.enabled = false;
-            disableButton.gameObject.SetActive(false);
-        }
+        if (!Archipelago.IsConnected || Archipelago.GetEnabledTribes().Contains((TribeType)idx)) { return; }
+
+        logger.LogInfo($"↪ Tribe {(TribeType)idx} is missing in Archipelago.");
+        UIToggleButton disableButton = __instance.disableButton;
+        disableButton.enabled = false;
+        disableButton.gameObject.SetActive(false);
     }
 
     [HarmonyPostfix]

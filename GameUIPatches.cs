@@ -35,7 +35,7 @@ public static class GameUIPatches
     [HarmonyPatch(typeof(GameModeScreen_UI2), nameof(GameModeScreen_UI2.OnShow))]
     private static bool GameModeScreen_UI2_JumpToCreative_Prefix(GameModeScreen_UI2 __instance)
     {
-        if (!Archipelago.isConnected)
+        if (!Archipelago.IsConnected)
         {
             logger.LogInfo("GameModeScreen_UI2.OnShow called. Not connected to Archipelago, skipping custom logic.");
             return true;

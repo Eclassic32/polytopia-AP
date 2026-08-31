@@ -71,7 +71,7 @@ public static class APUI
             new("buttons.back", closesPopup: true),
         };
 
-        if (!Archipelago.isConnected) {
+        if (!Archipelago.IsConnected) {
             popup.Description = Localization.Get("apmw.disconnected");
             PopupButtonData btn = new(
                 "apmw.connect.btn",
@@ -93,7 +93,7 @@ public static class APUI
             logger.LogInfo("ConnectToArchipelago called.");
             bool res = await Archipelago.ConnectToRoom("localhost", 38281, "Small", null);
             if (res) {
-                logger.LogInfo(Archipelago.slotData?.ToString());
+                logger.LogInfo(Archipelago.SlotData?.ToString());
             }
         }
 
@@ -107,7 +107,7 @@ public static class APUI
     }
 
     // copied from https://github.com/PolyModdingTeam/PolyMod/blob/main/src/Managers/Visual.cs
-    // why is there so many internal methods :sob:
+    // why is there so many internal methods T_T
     internal static BasicPopupLegacy GetBasicPopupLegacy()
 	{
 		WhatsNewPopup whatsNewPopup = PopupManager.GetWhatsNewPopup();
