@@ -93,7 +93,7 @@ public static class APUI
             logger.LogInfo("ConnectToArchipelago called.");
             bool res = await Archipelago.ConnectToRoom("localhost", 38281, "Small", null);
             if (res) {
-                logger.LogInfo(Archipelago.SlotData?.ToString());
+                logger.LogInfo(Archipelago.Connection?.ToString());
             }
         }
 

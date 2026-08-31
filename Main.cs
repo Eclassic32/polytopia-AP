@@ -33,7 +33,7 @@ public static class Main
     [HarmonyPatch(typeof(GameSettings), nameof(GameSettings.IsTribeEnabled))]
     private static void GameSettings_IsTribeEnabled_Postfix(GameSettings __instance, TribeType tribeType, ref bool __result)
     {
-        if (!Archipelago.IsConnected || Archipelago.SlotData is null) { return; }
+        if (!Archipelago.IsConnected) { return; }
         __result = Archipelago.GetEnabledTribes().Contains(tribeType) && __result;
 
         // logger.LogInfo($"PlayableTribes: {string.Join(", ", Archipelago.GetPlayableTribes())}");
@@ -72,12 +72,14 @@ public static class Main
     private static void EndMatchCommand_Execute_Postfix(EndMatchCommand __instance, GameState state)
     {
         PlayerState player = state.GetFirstHumanPlayer();
-        state.TryGetWinner(out PlayerState winner);
+        // state.TryGetWinner(out PlayerState winner);
 
         uint finalScore = player.score;
         logger.LogInfo("EndMatchCommand.Execute called.");
         logger.LogInfo($"↪ Final Score: {finalScore}");
-        logger.LogInfo($"↪ Player {(player.Id == winner.Id ? "won" : "lost")} the game. Winner: {winner.GetNameInternal()} ({winner.tribe})");
+
+        int score_K = (int)finalScore/1000; 
+        Archipelago.SendScoreLocation(player.tribe, score_K);
     }
 
 

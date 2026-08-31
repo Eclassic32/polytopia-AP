@@ -14,9 +14,11 @@ public static class Archipelago
     private static readonly string game_name = "The Battle of Polytopia";
     public static bool IsConnected {get; private set;} = false;
     public static ArchipelagoSession? Session {get; private set;}
-    public static LoginSuccessful? SlotData {get; private set;}
+    public static LoginSuccessful? Connection {get; private set;}
     private static string[] PlayableTribes = Array.Empty<string>();
     public static int UniqueTribesWins { get; private set; } = -1;
+    public static int ScoreToVictory { get; private set; } = -1;
+    public static bool SendScoreChecksImmediately {get; private set;} = true;
 
 
     public async static Task<bool> ConnectToRoom(string URL, int port, string slot_name, string? password)
@@ -54,15 +56,24 @@ public static class Archipelago
             return false;
         }
 
-        SlotData = (LoginSuccessful)result;
+        Connection = (LoginSuccessful)result;
         IsConnected = true;
         logger.LogInfo($"Connected to Archipelago Room: {URL}:{port} as {slot_name}");
 
-        PlayableTribes = ((JArray)SlotData.SlotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
+        Dictionary<string, object> SlotData = Connection.SlotData;
+
+        PlayableTribes = ((JArray)SlotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
         logger.LogInfo($"Slot Data - Playable Tribes: {string.Join(", ", PlayableTribes)}");
 
-        UniqueTribesWins = (int)(long)SlotData.SlotData["unique_tribes_wins"];
+        UniqueTribesWins = (int)(long)SlotData["unique_tribes_wins"];
         logger.LogInfo($"Slot Data - Unique Tribes Wins: {UniqueTribesWins}");
+
+        ScoreToVictory = (int)(long)SlotData["score_to_victory"];
+        logger.LogInfo($"Slot Data - Score to Victory: {ScoreToVictory}");
+
+        SendScoreChecksImmediately = (bool)SlotData["send_score_checks_immediately"];
+        logger.LogInfo($"Slot Data - Send Score Checks Immediately: {SendScoreChecksImmediately}");
+
         return true;
     }
 
@@ -110,4 +121,22 @@ public static class Archipelago
         logger.LogError($"AP Connection Error: {message}\n{e}");
     }
 
+    public static void SendScoreLocation(TribeType tribe, int score)
+    {
+        if (!IsConnected || Session is null) { return; }
+        int startID = score >= ScoreToVictory ? 0 : 1;  
+        long[] locationIDs = new long[UniqueTribesWins + startID];
+
+        for (int i = startID; i < locationIDs.Length; i++)
+        {
+            locationIDs[i - startID] = TribeSpecificLocationID(tribe, i);
+        }
+
+        Session.Locations.CompleteLocationChecks(locationIDs);
+    }
+
+    internal static long TribeSpecificLocationID(TribeType tribe, int id)
+    {
+        return ((int)tribe * 1000) + id;
+    }
 }
