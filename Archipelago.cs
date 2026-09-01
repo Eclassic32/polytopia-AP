@@ -144,19 +144,21 @@ public static class Archipelago
     {
         if (!IsConnected || Session is null) { return; }
         int startID = score >= ScoreToVictory ? 0 : 1;  
-        long[] locationIDs = new long[UniqueTribesWins + startID];
+        long[] locationIDs = new long[score + startID];
 
         for (int i = startID; i < locationIDs.Length; i++)
         {
             locationIDs[i - startID] = TribeSpecificLocationID(tribe, i);
         }
 
+        logger.LogInfo($"Sending Score Location Checks for {tribe} ({(int)tribe}) [{Array.IndexOf(APTribeOrder, tribe)}] - Score: {score}K" +
+                        $"\nLocations: {string.Join(", ", locationIDs)}");
         Session.Locations.CompleteLocationChecks(locationIDs);
     }
 
     internal static long TribeSpecificLocationID(TribeType tribe, int locationID)
     {
-        int APTribeIdx = Array.IndexOf(APTribeOrder, tribe);
+        int APTribeIdx = Array.IndexOf(APTribeOrder, tribe) + 1;
         return (APTribeIdx * 1000) + locationID;
     }
 }
