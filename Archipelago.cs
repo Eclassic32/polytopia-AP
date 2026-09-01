@@ -20,6 +20,25 @@ public static class Archipelago
     public static int ScoreToVictory { get; private set; } = -1;
     public static bool SendScoreChecksImmediately {get; private set;} = true;
 
+    public static readonly TribeType[] APTribeOrder = new TribeType[] {
+        TribeType.Xinxi,
+        TribeType.Imperius,
+        TribeType.Bardur,
+        TribeType.Oumaji,
+        TribeType.Kickoo,
+        TribeType.Hoodrick,
+        TribeType.Luxidoor,
+        TribeType.Vengir,
+        TribeType.Zebasi,
+        TribeType.Aimo,
+        TribeType.Quetzali,
+        TribeType.Yadakk,
+        TribeType.Aquarion,
+        TribeType.Elyrion,
+        TribeType.Polaris,
+        TribeType.Cymanti,
+    };
+
 
     public async static Task<bool> ConnectToRoom(string URL, int port, string slot_name, string? password)
     {
@@ -71,7 +90,7 @@ public static class Archipelago
         ScoreToVictory = (int)(long)SlotData["score_to_victory"];
         logger.LogInfo($"Slot Data - Score to Victory: {ScoreToVictory}");
 
-        SendScoreChecksImmediately = (bool)SlotData["send_score_checks_immediately"];
+        SendScoreChecksImmediately = (long)SlotData["send_score_checks_immediately"] == 1;
         logger.LogInfo($"Slot Data - Send Score Checks Immediately: {SendScoreChecksImmediately}");
 
         return true;
@@ -82,7 +101,7 @@ public static class Archipelago
         return PlayableTribes.Select(t => (TribeType)Enum.Parse(typeof(TribeType), t)).ToArray();
     }
 
-    public static TribeType[] GetEnabledTribes()
+    public static TribeType[] GetReceivedTribes()
     {
         TribeType[] result = Array.Empty<TribeType>();
         if (!IsConnected || Session is null) { return result; }
@@ -135,8 +154,9 @@ public static class Archipelago
         Session.Locations.CompleteLocationChecks(locationIDs);
     }
 
-    internal static long TribeSpecificLocationID(TribeType tribe, int id)
+    internal static long TribeSpecificLocationID(TribeType tribe, int locationID)
     {
-        return ((int)tribe * 1000) + id;
+        int APTribeIdx = Array.IndexOf(APTribeOrder, tribe);
+        return (APTribeIdx * 1000) + locationID;
     }
 }
