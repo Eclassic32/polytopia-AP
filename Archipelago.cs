@@ -40,10 +40,10 @@ public static class Archipelago
     };
 
 
-    public async static Task<bool> ConnectToRoom(string URL, int port, string slot_name, string? password)
+    public async static Task<bool> ConnectToRoom(string address, string slot_name, string? password)
     {
         LoginResult? result = null;
-        Session = ArchipelagoSessionFactory.CreateSession(URL, port);
+        Session = ArchipelagoSessionFactory.CreateSession(address);
         Session.Socket.ErrorReceived += OnErrorReceived;
         Session.MessageLog.OnMessageReceived += OnMessageReceived;
         Session.Items.ItemReceived += OnItemReceived;
@@ -61,7 +61,7 @@ public static class Archipelago
 
         if (!result.Successful) {
             LoginFailure failure = (LoginFailure)result;
-            string errorMessage = $"Failed to Connect to {URL}:{port} as {slot_name}:";
+            string errorMessage = $"Failed to Connect to {address} as {slot_name}:";
             foreach (string error in failure.Errors)
             {
                 errorMessage += $"\n    {error}";
@@ -77,7 +77,7 @@ public static class Archipelago
 
         Connection = (LoginSuccessful)result;
         IsConnected = true;
-        logger.LogInfo($"Connected to Archipelago Room: {URL}:{port} as {slot_name}");
+        logger.LogInfo($"Connected to Archipelago Room: {address} as {slot_name}");
 
         Dictionary<string, object> SlotData = Connection.SlotData;
 

@@ -19,11 +19,11 @@ namespace PolytopiaArchipelagoMW;
 public static class APUI
 {
     private static ManualLogSource logger = new("apmw: APUI");
-
-    private const string HEADER_PREFIX = "<align=\"center\"><size=150%><b>";
-    private const string HEADER_POSTFIX = "</b></size><align=\"left\">";
-    private const int POPUP_WIDTH = 1400;
     private static UIRoundButton_UI2? archipelagoModButton = null;
+    private static string APAddress = "localhost:38281";
+    private static string APSlotName = "Player_Polytopia";
+    private static string? APPassword = null;
+
 
     public static void Load(ManualLogSource logger)
     {
@@ -79,6 +79,17 @@ public static class APUI
             );
 
             popupButtons.Add(btn);
+
+            AddInputToPopup(popup, baseValue: APAddress, placeholderText: "Archipelago Address", 
+                            onSubmit: input => { APAddress = input; }, 
+                            onValueChanged: input => { APAddress = input; });
+            AddInputToPopup(popup, baseValue: APSlotName, placeholderText: "Slot Name", 
+                            onSubmit: input => { APSlotName = input; }, 
+                            onValueChanged: input => { APSlotName = input; });
+            AddInputToPopup(popup, baseValue: "", placeholderText: "Password (optional)", 
+                            onSubmit: input => { APPassword = input; }, 
+                            onValueChanged: input => { APPassword = input; });
+
         } else {
             popup.Description = Localization.Get("apmw.connected");
             popupButtons.Add(new(
@@ -91,7 +102,7 @@ public static class APUI
         async void ConnectToArchipelago()
         {
             logger.LogInfo("ConnectToArchipelago called.");
-            bool res = await Archipelago.ConnectToRoom("localhost", 38281, "Small", null);
+            bool res = await Archipelago.ConnectToRoom(APAddress, APSlotName, APPassword);
             if (res) {
                 logger.LogInfo(Archipelago.Connection?.ToString());
             }
@@ -121,4 +132,105 @@ public static class APUI
 		basicPopupLegacy.rectTransform.SetAsLastSibling();
 		return basicPopupLegacy;
 	}
+
+    // Thanks to Fa (pingvin) for letting me to copy his code
+    // https://github.com/johnklipi/PolytopiaMapMaker/blob/main/src/UI/Popup/CustomInput.cs
+    public static void AddInputToPopup(
+        BasicPopupLegacy popup, 
+        string baseValue = "", 
+        string placeholderText = "Type here...", 
+        Action<string>? onSubmit = null, 
+        Action<string>? onValueChanged = null)
+    {
+        EventSystem.current.sendNavigationEvents = false;
+        InputManager.DisableInput(InputManager.InputType.Camera | InputManager.InputType.Map | InputManager.InputType.Input);
+        Transform parent = popup.content != null ? popup.content.transform : popup.transform;
+
+        GameObject go = new GameObject("InputBox");
+        go.transform.SetParent(parent, false);
+
+
+        // Body
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(400, 50);
+        rt.anchoredPosition = new Vector2(0, 0);
+
+        var layoutElement = go.AddComponent<LayoutElement>();
+        layoutElement.minWidth = 200;
+        layoutElement.minHeight = 20;
+        layoutElement.preferredWidth = 400;
+        layoutElement.preferredHeight = 50;
+
+        // Background
+        var bg = go.AddComponent<Image>();
+        bg.color = Color.white;
+
+        // Text
+        GameObject textGo = new GameObject("Text");
+        textGo.transform.SetParent(go.transform, false);
+        var text = textGo.AddComponent<TextMeshProUGUI>();
+        text.text = "";
+        text.fontSize = 40;
+        text.color = Color.black;
+
+        // Text layout
+        RectTransform txtRT = textGo.GetComponent<RectTransform>();
+        txtRT.anchorMin = Vector2.zero;
+        txtRT.anchorMax = Vector2.one;
+        txtRT.offsetMin = new Vector2(10, 10);
+        txtRT.offsetMax = new Vector2(-10, -10);
+
+        // Textarea
+        GameObject textArea = new GameObject("Text Area");
+        textArea.transform.SetParent(go.transform, false);
+
+        RectTransform textAreaRT = textArea.AddComponent<RectTransform>();
+        textAreaRT.anchorMin = Vector2.zero;
+        textAreaRT.anchorMax = Vector2.one;
+        textAreaRT.offsetMin = new Vector2(10, 10);
+        textAreaRT.offsetMax = new Vector2(-10, -10);
+
+        textArea.AddComponent<RectMask2D>();
+
+        // Placeholder
+
+        GameObject placeholderGO = new GameObject("Placeholder");
+        placeholderGO.transform.SetParent(textArea.transform, false);
+
+        var placeholder = placeholderGO.AddComponent<TextMeshProUGUI>();
+        placeholder.text = placeholderText;
+        placeholder.fontSize = 36;
+        placeholder.color = new Color(0.6f, 0.6f, 0.6f);
+
+        RectTransform placeholderRT = placeholderGO.GetComponent<RectTransform>();
+        placeholderRT.anchorMin = Vector2.zero;
+        placeholderRT.anchorMax = Vector2.one;
+        placeholderRT.offsetMin = Vector2.zero;
+        placeholderRT.offsetMax = Vector2.zero;
+
+
+        // TMP InputField
+        var input = go.AddComponent<TMP_InputField>();
+        input.textViewport = textAreaRT;
+        input.textComponent = text;
+        input.placeholder = placeholder;
+        input.interactable = true;
+        input.text = baseValue;
+        popup.IsUnskippable = true;
+        if (onSubmit != null)
+        {
+            input.onSubmit.RemoveAllListeners();
+            input.onSubmit.AddListener(onSubmit);
+        }
+        if (onValueChanged != null)
+        {
+            input.onValueChanged.RemoveAllListeners();
+            input.onValueChanged.AddListener(onValueChanged);
+        }
+
+        // popup.Show();
+
+        // UINavigationManager.Select(input);
+        // popup.currentSelectable = input;
+    }
 }
