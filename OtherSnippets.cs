@@ -10,8 +10,6 @@ public static class OtherSnippets
 {
     private static ManualLogSource logger = new("apmw: OtherSnippets");
 
-    private static bool isConnectedToArchipelago = false;
-    private static bool shouldHidePerfectionAndDomination = true;
     private static TribeType[] enabledTribes = new TribeType[]
     {
         TribeType.Xinxi,

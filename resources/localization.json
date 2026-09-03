@@ -1,0 +1,17 @@
+{
+    "apmw_hub": {
+        "English": "Archipelago Hub"
+    },
+    "apmw_connected": {
+        "English": "Connected to Archipelago"
+    },
+    "apmw_connect_btn": {
+        "English": "Connect"
+    },
+    "apmw_disconnected": {
+        "English": "Disconnected from Archipelago"
+    },
+    "apmw_disconnect_btn": {
+        "English": "Disconnect"
+    }
+}
