@@ -15,11 +15,8 @@ public static class Archipelago
     public static bool IsConnected {get; private set;} = false;
     public static ArchipelagoSession? Session {get; private set;}
     public static LoginSuccessful? Connection {get; private set;}
-    private static string[] PlayableTribes = Array.Empty<string>();
-    public static int UniqueTribesWins { get; private set; } = -1;
-    public static int ScoreToVictory { get; private set; } = -1;
-    public static bool SendScoreChecksImmediately {get; private set;} = true;
-
+    public static SlotDataClass SlotData {get; private set;} = new SlotDataClass();    
+    
     public static readonly TribeType[] APTribeOrder = new TribeType[] {
         TribeType.Xinxi,
         TribeType.Imperius,
@@ -37,8 +34,7 @@ public static class Archipelago
         TribeType.Elyrion,
         TribeType.Polaris,
         TribeType.Cymanti,
-    };
-
+    }; 
 
     public async static Task<bool> ConnectToRoom(string address, string slot_name, string? password)
     {
@@ -76,29 +72,14 @@ public static class Archipelago
         }
 
         Connection = (LoginSuccessful)result;
+        Session.SetClientState(ArchipelagoClientState.ClientConnected);
         IsConnected = true;
         logger.LogInfo($"Connected to Archipelago Room: {address} as {slot_name}");
 
-        Dictionary<string, object> SlotData = Connection.SlotData;
-
-        PlayableTribes = ((JArray)SlotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
-        logger.LogInfo($"Slot Data - Playable Tribes: {string.Join(", ", PlayableTribes)}");
-
-        UniqueTribesWins = (int)(long)SlotData["unique_tribes_wins"];
-        logger.LogInfo($"Slot Data - Unique Tribes Wins: {UniqueTribesWins}");
-
-        ScoreToVictory = (int)(long)SlotData["score_to_victory"];
-        logger.LogInfo($"Slot Data - Score to Victory: {ScoreToVictory}");
-
-        SendScoreChecksImmediately = (long)SlotData["send_score_checks_immediately"] == 1;
-        logger.LogInfo($"Slot Data - Send Score Checks Immediately: {SendScoreChecksImmediately}");
+        Dictionary<string, object> slotData = Connection.SlotData;
+        SlotData.SetSlotData(slotData, logger);
 
         return true;
-    }
-
-    public static TribeType[] GetPlayableTribes()
-    {
-        return PlayableTribes.Select(t => (TribeType)Enum.Parse(typeof(TribeType), t)).ToArray();
     }
 
     public static TribeType[] GetReceivedTribes()
@@ -143,7 +124,7 @@ public static class Archipelago
     public static void SendScoreLocation(TribeType tribe, int score)
     {
         if (!IsConnected || Session is null) { return; }
-        int startID = score >= ScoreToVictory ? 0 : 1;  
+        int startID = score >= SlotData.ScoreToVictory ? 0 : 1;  
         long[] locationIDs = new long[score + startID];
 
         for (int i = startID; i < locationIDs.Length; i++)
@@ -160,5 +141,41 @@ public static class Archipelago
     {
         int APTribeIdx = Array.IndexOf(APTribeOrder, tribe) + 1;
         return (APTribeIdx * 1000) + locationID;
+    }
+}
+
+public class SlotDataClass 
+{
+    public string[] PlayableTribes = Array.Empty<string>();
+    public int UniqueTribesWins { get; set; } = -1;
+    public int ScoreToVictory { get; set; } = -1;
+    public bool SendScoreChecksImmediately {get; set;} = true;
+
+    public TribeType[] GetPlayableTribes()
+    {
+        return PlayableTribes.Select(t => (TribeType)Enum.Parse(typeof(TribeType), t)).ToArray();
+    }
+
+    public void SetSlotData(Dictionary<string, object> slotData, ManualLogSource logger)
+    {
+        PlayableTribes = ((JArray)slotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
+        logger.LogInfo($"Slot Data - Playable Tribes: {string.Join(", ", PlayableTribes)}");
+
+        UniqueTribesWins = (int)(long)slotData["unique_tribes_wins"];
+        logger.LogInfo($"Slot Data - Unique Tribes Wins: {UniqueTribesWins}");
+
+        ScoreToVictory = (int)(long)slotData["score_to_victory"];
+        logger.LogInfo($"Slot Data - Score to Victory: {ScoreToVictory}");
+
+        SendScoreChecksImmediately = (long)slotData["send_score_checks_immediately"] == 1;
+        logger.LogInfo($"Slot Data - Send Score Checks Immediately: {SendScoreChecksImmediately}");
+    }
+
+    public override string ToString()
+    {
+        return $"Playable Tribes: {string.Join(", ", PlayableTribes)}\n" +
+               $"Unique Tribes Wins: {UniqueTribesWins}\n" +
+               $"Score to Victory: {ScoreToVictory}\n" +
+               $"Send Score Checks Immediately: {SendScoreChecksImmediately}";
     }
 }

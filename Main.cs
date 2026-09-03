@@ -28,7 +28,7 @@ public static class Main
         if (!Archipelago.IsConnected) { return; }
         logger.LogInfo($"TribePickerScreen_UI2.RunLayout called");
 
-        TribeType[] playableTribes = Archipelago.GetPlayableTribes();
+        TribeType[] playableTribes = Archipelago.SlotData.GetPlayableTribes();
         
         foreach (TribeType tribe in Archipelago.APTribeOrder)
         {
