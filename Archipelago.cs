@@ -79,6 +79,7 @@ public static class Archipelago
 
         Dictionary<string, object> slotData = Connection.SlotData;
         SlotData.SetSlotData(slotData, logger);
+        CheckIfGoaled();
 
         return true;
     }
@@ -97,6 +98,25 @@ public static class Archipelago
                 {
                     result = result.Append(tribeType).ToArray();
                 }
+            }
+        }
+        return result;
+    }
+
+    public static TribeType[] GetVictoriousTribes()
+    {
+        TribeType[] result = Array.Empty<TribeType>();
+        if (!IsConnected || Session is null) { return result; }
+
+        var checkedLocations = Session.Locations.AllLocationsChecked;
+        var playableTribes = SlotData.GetPlayableTribes();
+        foreach (TribeType tribe in playableTribes)
+        {
+            int tribeIndex = Array.IndexOf(APTribeOrder, tribe) + 1;
+            long victoryLocationID = TribeSpecificLocationID(tribe, 0);
+            if (checkedLocations.Contains(victoryLocationID))
+            {
+                result = result.Append(tribe).ToArray();
             }
         }
         return result;
@@ -138,12 +158,13 @@ public static class Archipelago
         Session.Locations.CompleteLocationChecks(locationIDs);
     }
 
-    public static void CheckForGoal()
+    public static void CheckIfGoaled()
     {
         if (!IsConnected || Session is null) { return; }
-        if (true) { return; }
+        if (GetVictoriousTribes().Length < SlotData.UniqueTribesWins) { return; }
 
         Session.SetClientState(ArchipelagoClientState.ClientGoal);
+        Session.SetGoalAchieved();
     }
 
     public async static void Disconnect()

@@ -97,6 +97,7 @@ public static class Main
 
         int score_K = (int)finalScore/1000; 
         Archipelago.SendScoreLocation(player.tribe, score_K);
+        Archipelago.CheckIfGoaled();
     }
 
 
