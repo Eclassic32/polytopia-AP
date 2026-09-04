@@ -80,21 +80,24 @@ public static class APUI
 
             popupButtons.Add(btn);
 
-            AddInputToPopup(popup, baseValue: APAddress, placeholderText: "Archipelago Address", 
+            AddInputToPopup(popup, baseValue: APAddress, placeholderText: bold(Localization.Get("apmw.fields.address")), 
                             onSubmit: input => { APAddress = input; }, 
                             onValueChanged: input => { APAddress = input; });
-            AddInputToPopup(popup, baseValue: APSlotName, placeholderText: "Slot Name", 
+            AddInputToPopup(popup, baseValue: APSlotName, placeholderText: bold(Localization.Get("apmw.fields.slotname")), 
                             onSubmit: input => { APSlotName = input; }, 
                             onValueChanged: input => { APSlotName = input; });
-            AddInputToPopup(popup, baseValue: "", placeholderText: "Password (optional)", 
+            AddInputToPopup(popup, baseValue: "", placeholderText: bold(Localization.Get("apmw.fields.password")), 
                             onSubmit: input => { APPassword = input; }, 
                             onValueChanged: input => { APPassword = input; });
 
         } else {
-            popup.Description = Localization.Get("apmw.connected");
+            popup.Description = Localization.Get("apmw.connected", new Il2CppSystem.Object[] {APAddress, APSlotName});
             popupButtons.Add(new(
                 "apmw.disconnect.btn",
-                callback: DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(DisconnectFromArchipelago)
+                callback: DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(DisconnectFromArchipelago),
+                customColorStates: new UIButtonBase.ColorStates() {
+                    defaultColor = new Color(0.8f, 0.08f, 0.08f),
+                }
             ));
         }
         
@@ -111,6 +114,7 @@ public static class APUI
         void DisconnectFromArchipelago()
         {
             logger.LogInfo("DisconnectFromArchipelago called.");
+            Archipelago.Disconnect();
         }
 
         popup.buttonData = popupButtons.ToArray();
@@ -232,5 +236,10 @@ public static class APUI
 
         // UINavigationManager.Select(input);
         // popup.currentSelectable = input;
+    }
+
+    internal static string bold(string text)
+    {
+        return $"<b>{text}</b>";
     }
 }

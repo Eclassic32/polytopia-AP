@@ -12,11 +12,6 @@ public static class Archipelago
 {
     private static readonly ManualLogSource logger = Main.logger;
     private static readonly string game_name = "The Battle of Polytopia";
-    public static bool IsConnected {get; private set;} = false;
-    public static ArchipelagoSession? Session {get; private set;}
-    public static LoginSuccessful? Connection {get; private set;}
-    public static SlotDataClass SlotData {get; private set;} = new SlotDataClass();    
-    
     public static readonly TribeType[] APTribeOrder = new TribeType[] {
         TribeType.Xinxi,
         TribeType.Imperius,
@@ -35,6 +30,12 @@ public static class Archipelago
         TribeType.Polaris,
         TribeType.Cymanti,
     }; 
+    public static bool IsConnected {get; private set;} = false;
+    public static ArchipelagoSession? Session {get; private set;}
+    public static LoginSuccessful? Connection {get; private set;}
+    public static SlotDataClass SlotData {get; private set;} = new SlotDataClass();    
+    
+    
 
     public async static Task<bool> ConnectToRoom(string address, string slot_name, string? password)
     {
@@ -135,6 +136,26 @@ public static class Archipelago
         logger.LogInfo($"Sending Score Location Checks for {tribe} ({(int)tribe}) [{Array.IndexOf(APTribeOrder, tribe)}] - Score: {score}K" +
                         $"\nLocations: {string.Join(", ", locationIDs)}");
         Session.Locations.CompleteLocationChecks(locationIDs);
+    }
+
+    public static void CheckForGoal()
+    {
+        if (!IsConnected || Session is null) { return; }
+        if (true) { return; }
+
+        Session.SetClientState(ArchipelagoClientState.ClientGoal);
+    }
+
+    public async static void Disconnect()
+    {
+        if (!IsConnected || Session is null) { return; }
+
+        await Session.Socket.DisconnectAsync();
+        Connection = null;
+        SlotData = new SlotDataClass();
+        Session = null;
+        IsConnected = false;
+        logger.LogInfo("Disconnected from Archipelago");
     }
 
     internal static long TribeSpecificLocationID(TribeType tribe, int locationID)
