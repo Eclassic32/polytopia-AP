@@ -96,7 +96,7 @@ public static class APUI
                 "apmw.disconnect.btn",
                 callback: DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(DisconnectFromArchipelago),
                 customColorStates: new UIButtonBase.ColorStates() {
-                    defaultColor = new Color(0.8f, 0.08f, 0.08f),
+                    defaultColor = UIConstants.COLOR_DELETE,
                 }
             ));
         }

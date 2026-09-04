@@ -133,8 +133,8 @@ public static class Archipelago
             locationIDs[i - startID] = TribeSpecificLocationID(tribe, i);
         }
 
-        logger.LogInfo($"Sending Score Location Checks for {tribe} ({(int)tribe}) [{Array.IndexOf(APTribeOrder, tribe)}] - Score: {score}K" +
-                        $"\nLocations: {string.Join(", ", locationIDs)}");
+        logger.LogInfo($"Sending Score Location Checks for {tribe} ({(int)tribe}) [{Array.IndexOf(APTribeOrder, tribe)}]" +
+                        $" - Score: {score}K\nLocations: {string.Join(", ", locationIDs)}");
         Session.Locations.CompleteLocationChecks(locationIDs);
     }
 
