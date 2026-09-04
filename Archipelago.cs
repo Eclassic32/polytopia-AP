@@ -167,6 +167,12 @@ public static class Archipelago
         Session.SetGoalAchieved();
     }
 
+    public static void SetClientState(ArchipelagoClientState state)
+    {
+        if (!IsConnected || Session is null) { return; }
+        Session.SetClientState(state);
+    }
+
     public async static void Disconnect()
     {
         if (!IsConnected || Session is null) { return; }

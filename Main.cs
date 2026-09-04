@@ -5,6 +5,7 @@ using PolytopiaBackendBase.Game;
 using UnityEngine;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppSystem.Collections.Generic;
+using Archipelago.MultiClient.Net.Enums;
 
 namespace PolytopiaArchipelagoMW;
 public static class Main
@@ -28,6 +29,7 @@ public static class Main
         if (!Archipelago.IsConnected) { return; }
         logger.LogInfo($"TribePickerScreen_UI2.RunLayout called");
 
+        Archipelago.SetClientState(ArchipelagoClientState.ClientReady);
         TribeType[] playableTribes = Archipelago.SlotData.GetPlayableTribes();
         
         foreach (TribeType tribe in Archipelago.APTribeOrder)
@@ -102,7 +104,13 @@ public static class Main
 
 
     // --- EXPLORATION ---
-    
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameManager), nameof(GameManager.OnLevelLoaded))]
+    private static void GameManager_OnLevelLoaded_Postfix(GameManager __instance)
+    {
+        logger.LogInfo("GameManager.OnLevelLoaded called.");
+        Archipelago.SetClientState(ArchipelagoClientState.ClientPlaying);
+    }
 
 
 
