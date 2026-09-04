@@ -41,7 +41,7 @@ public static class APUI
         logger.LogInfo("StartScreen_UI2.Init called.");
 
         archipelagoModButton = UILibrary.NewRoundButton(transform).SetStyle(UIButtonBase_UI2.ButtonStyle.Suggested);
-        archipelagoModButton.bg.sprite = Registry.GetSprite("ap-logo__.png");
+        archipelagoModButton.bg.sprite = Registry.GetSprite("ap-logo");
         archipelagoModButton.OnClickedSignal.Add(DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(ShowArchipelagoHub));
     }
 
