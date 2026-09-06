@@ -1,0 +1,7 @@
+{
+    "name": "Archipelago MW for Polytopia",
+    "version": "0.1.0",
+    "description": "Adds https://archipelago.gg randomizer support to Polytopia.",
+    "id": "archipelagomw",
+    "authors": ["ec32"]
+}

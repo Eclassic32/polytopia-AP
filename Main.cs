@@ -31,6 +31,7 @@ public static class Main
 
         Archipelago.SetClientState(ArchipelagoClientState.ClientReady);
         TribeType[] playableTribes = Archipelago.SlotData.GetPlayableTribes();
+        TribeType[] receivedTribes = Archipelago.GetReceivedTribes();
         
         foreach (TribeType tribe in Archipelago.APTribeOrder)
         {
@@ -42,6 +43,12 @@ public static class Main
                 btn.enabled = false;
                 btn.gameObject.SetActive(false);
                 logger.LogInfo($"↪ Tribe {tribe} is not playable in Archipelago.");
+            }
+
+            if (!receivedTribes.Contains(tribe))
+            {
+                btn.bg.color = UIConstants.COLOR_DELETE;
+                logger.LogInfo($"↪ Tribe {tribe} is not received in Archipelago.");
             }
         }
     }
@@ -98,20 +105,38 @@ public static class Main
         logger.LogInfo($"↪ Final Score: {finalScore}");
 
         int score_K = (int)finalScore/1000; 
-        Archipelago.SendScoreLocation(player.tribe, score_K);
-        Archipelago.CheckIfGoaled();
+        Archipelago.SendScoreLocation(player.tribe, score_K, true);
     }
 
+    private static GameState? gameState;
 
-    // --- EXPLORATION ---
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameManager), nameof(GameManager.OnLevelLoaded))]
     private static void GameManager_OnLevelLoaded_Postfix(GameManager __instance)
     {
         logger.LogInfo("GameManager.OnLevelLoaded called.");
         Archipelago.SetClientState(ArchipelagoClientState.ClientPlaying);
+        
+        gameState = __instance.client.GameState;
     }
 
+    // Called on actuall UI Score update 
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ScoreContainer), nameof(ScoreContainer.UpdateText))]
+    private static void ScoreContainer_UpdateText_Prefix(ScoreContainer __instance)
+    {
+        if (!Archipelago.IsConnected || !Archipelago.SlotData.SendScoreChecksImmediately) { return; }
+        if (gameState == null) {
+            logger.LogWarning("GameState is not found");
+            return; 
+        }
+        
+        PlayerState player = gameState.GetFirstHumanPlayer();
+        TribeType tribe = player.tribe;
+        float score = __instance.score;
+        int score_K = (int)score/1000;
 
+        Archipelago.SendScoreLocation(tribe, score_K, false);
+    }
 
 }

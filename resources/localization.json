@@ -1,17 +1,29 @@
 {
+    "apmw_hub_btn": {
+        "English": "Archipelago\nHub"
+    },
     "apmw_hub": {
         "English": "Archipelago Hub"
     },
+    "apmw_fields_address": {
+        "English": "Address and Port"
+    },
+    "apmw_fields_slotname": {
+        "English": "Slot Name"
+    },
+    "apmw_fields_password": {
+        "English": "Password (Optional)"
+    },
     "apmw_connected": {
-        "English": "Connected to Archipelago"
+        "English": "Connected to Archipelago\nAddress: {0}\nSlot Name: {1}"
     },
     "apmw_connect_btn": {
-        "English": "Connect"
+        "English": "CONNECT"
     },
     "apmw_disconnected": {
         "English": "Disconnected from Archipelago"
     },
     "apmw_disconnect_btn": {
-        "English": "Disconnect"
+        "English": "DISCONNECT"
     }
 }
