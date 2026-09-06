@@ -8,7 +8,7 @@
             "name": "F5 Anything: Copy Build and Launch Polytopia",
             "type": "f5anything",
             "request": "launch",
-            "command": "Copy-Item -Path \".\\bin\\Debug\\net6.0\\PolytopiaArchipelagoMW.dll\" -Destination \"D:\\Steam\\steamapps\\common\\The Battle of Polytopia\\Mods\\polytopia-AP\\PolytopiaArchipelagoMW.dll\" -Force && start steam://rungameid/874390",
+            "command": "Copy-Item -Path \"D:\\Projects\\PolytopiaArchipelagoMW\\resources\\*\" -Destination \"D:\\Steam\\steamapps\\common\\The Battle of Polytopia\\Mods\\polytopia-AP\" -Recurse -Force && Copy-Item -Path \".\\bin\\Debug\\net6.0\\PolytopiaArchipelagoMW.dll\" -Destination \"D:\\Steam\\steamapps\\common\\The Battle of Polytopia\\Mods\\polytopia-AP\\PolytopiaArchipelagoMW.dll\" -Force && start steam://rungameid/874390",
             "terminalName": "F5 Anything",
             "terminalIndex": -1,
             "showTerminal": false,

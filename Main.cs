@@ -31,6 +31,7 @@ public static class Main
 
         Archipelago.SetClientState(ArchipelagoClientState.ClientReady);
         TribeType[] playableTribes = Archipelago.SlotData.GetPlayableTribes();
+        TribeType[] receivedTribes = Archipelago.GetReceivedTribes();
         
         foreach (TribeType tribe in Archipelago.APTribeOrder)
         {
@@ -42,6 +43,12 @@ public static class Main
                 btn.enabled = false;
                 btn.gameObject.SetActive(false);
                 logger.LogInfo($"↪ Tribe {tribe} is not playable in Archipelago.");
+            }
+
+            if (!receivedTribes.Contains(tribe))
+            {
+                btn.bg.color = UIConstants.COLOR_DELETE;
+                logger.LogInfo($"↪ Tribe {tribe} is not received in Archipelago.");
             }
         }
     }
