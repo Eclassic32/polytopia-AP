@@ -66,3 +66,9 @@ You need to play several matches with unique tribes, and reach `{RequiredScoreFo
   - (NOT IMPLEMENTED) Tribes you have checked Victory location will have **green** background
   - (NOT IMPLEMENTED) Tribes you have checked ALL location will have **gold** background
 5. To Disconnect, in main menu press `Archipelago Hub` button and `DISCONNECT` button
+
+## AI Disclosure:
+No graphical assets were made by any generative AI.
+Small portion of the code was written by AI Inline Suggestions (GitHub Copilot), with carefull inspection of its code.
+AI Chat Bots were used to understand the basics of Unity modding and decypher few game methods decompiled by ghidra.
+No part of the project was directly copy-pasted from AI Chat Bots.
