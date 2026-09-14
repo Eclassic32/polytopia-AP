@@ -6,37 +6,21 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Newtonsoft.Json.Linq;
 using PolytopiaBackendBase.Common;
+using Polytopia.Data;
+using static Constants;
+
 
 namespace PolytopiaArchipelagoMW;
 public static class Archipelago
 {
     private static readonly ManualLogSource logger = Main.logger;
-    private static readonly string game_name = "The Battle of Polytopia";
-    public static readonly TribeType[] APTribeOrder = new TribeType[] {
-        TribeType.Xinxi,
-        TribeType.Imperius,
-        TribeType.Bardur,
-        TribeType.Oumaji,
-        TribeType.Kickoo,
-        TribeType.Hoodrick,
-        TribeType.Luxidoor,
-        TribeType.Vengir,
-        TribeType.Zebasi,
-        TribeType.Aimo,
-        TribeType.Quetzali,
-        TribeType.Yadakk,
-        TribeType.Aquarion,
-        TribeType.Elyrion,
-        TribeType.Polaris,
-        TribeType.Cymanti,
-    }; 
+    
     public static bool IsConnected {get; private set;} = false;
     public static ArchipelagoSession? Session {get; private set;}
     public static LoginSuccessful? Connection {get; private set;}
-    public static SlotDataClass SlotData {get; private set;} = new SlotDataClass();    
+    public static SlotDataClass SlotData {get; private set;} = new();    
     private static Dictionary<TribeType, int> TribeMaxScores = new();
     
-
     public async static Task<bool> ConnectToRoom(string address, string slot_name, string? password)
     {
         LoginResult? result = null;
@@ -79,7 +63,7 @@ public static class Archipelago
 
         Dictionary<string, object> slotData = Connection.SlotData;
         SlotData.SetSlotData(slotData, logger);
-        CheckIfGoaled();
+        SendLocations.CheckIfGoaled();
 
         return true;
     }
@@ -155,92 +139,65 @@ public static class Archipelago
         logger.LogError($"AP Connection Error: {message}\n{e}");
     }
 
-    public static void SendScoreLocation(TribeType tribe, int score_K, bool sendVictory = false)
-    {
-        if (!IsConnected || Session is null) { return; }
-
-        if (TribeMaxScores.ContainsKey(tribe) && !sendVictory)
-        {
-            int maxScore = TribeMaxScores[tribe];
-            if (score_K <= maxScore) { return; } 
-        }
-
-        long[] locationIDs = new long[score_K];
-        for (int i = 0; i < locationIDs.Length; i++)
-        {
-            locationIDs[i] = TribeSpecificLocationID(tribe, i+1);
-        }
-
-        logger.LogInfo($"Sending Score Location Checks for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]" +
-                        $" - Score: {score_K}K\nLocations: {string.Join(", ", locationIDs)}");
-        Session.Locations.CompleteLocationChecks(locationIDs);
-        TribeMaxScores[tribe] = score_K;
-
-        if (sendVictory && SlotData.ScoreToVictory < score_K)
-        {
-            long victoryLocationID = TribeSpecificLocationID(tribe, 0);
-            logger.LogInfo($"Sending Victory Location Check ({victoryLocationID}) " + 
-                            $"for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]");
-            Session.Locations.CompleteLocationChecks(new long[] { victoryLocationID });
-            CheckIfGoaled();
-        }
-    }
-
-    public static void CheckIfGoaled()
-    {
-        if (!IsConnected || Session is null) { return; }
-        if (GetVictoriousTribes().Length < SlotData.UniqueTribesWins) { return; }
-
-        Session.SetClientState(ArchipelagoClientState.ClientGoal);
-        Session.SetGoalAchieved();
-    }
-
     public static void SetClientState(ArchipelagoClientState state)
     {
         if (!IsConnected || Session is null) { return; }
         Session.SetClientState(state);
     }
 
-
-    internal static long TribeSpecificLocationID(TribeType tribe, int locationID)
+    
+    public class SendLocations
     {
-        int APTribeIdx = Array.IndexOf(APTribeOrder, tribe) + 1;
-        return (APTribeIdx * 1000) + locationID;
+        public static void Technology(TribeType tribe, TechData.Type techType)
+        {
+            if (!IsConnected || Session is null) { return; }
+            long[] locationIDs = new long[2]; 
+            locationIDs[0] = TribeSpecificLocationID(0, (int)techType + TECH_OFFSET);
+            locationIDs[1] = TribeSpecificLocationID(tribe, (int)techType + TECH_OFFSET);
+            logger.LogInfo($"Sending Technology Location Checks for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]" +
+                            $" - Technology - {techType} ({(int)techType})\nLocation: {string.Join(", ", locationIDs)}");
+            Session.Locations.CompleteLocationChecks(locationIDs);
+        }
+
+        public static void Score(TribeType tribe, int score_K, bool sendVictory = false)
+        {
+            if (!IsConnected || Session is null) { return; }
+
+            if (TribeMaxScores.ContainsKey(tribe) && !sendVictory)
+            {
+                int maxScore = TribeMaxScores[tribe];
+                if (score_K <= maxScore) { return; } 
+            }
+
+            long[] locationIDs = new long[score_K];
+            for (int i = 0; i < locationIDs.Length; i++)
+            {
+                locationIDs[i] = TribeSpecificLocationID(tribe, i+1);
+            }
+
+            logger.LogInfo($"Sending Score Location Checks for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]" +
+                            $" - Score: {score_K}K\nLocations: {string.Join(", ", locationIDs)}");
+            Session.Locations.CompleteLocationChecks(locationIDs);
+            TribeMaxScores[tribe] = score_K;
+
+            if (sendVictory && SlotData.ScoreToVictory < score_K)
+            {
+                long victoryLocationID = TribeSpecificLocationID(tribe, 0);
+                logger.LogInfo($"Sending Victory Location Check ({victoryLocationID}) " + 
+                                $"for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]");
+                Session.Locations.CompleteLocationChecks(new long[] { victoryLocationID });
+                CheckIfGoaled();
+            }
+        }
+
+        public static void CheckIfGoaled()
+        {
+            if (!IsConnected || Session is null) { return; }
+            if (GetVictoriousTribes().Length < SlotData.UniqueTribesWins) { return; }
+
+            Session.SetClientState(ArchipelagoClientState.ClientGoal);
+            Session.SetGoalAchieved();
+        }
     }
 }
 
-public class SlotDataClass 
-{
-    public string[] PlayableTribes = Array.Empty<string>();
-    public int UniqueTribesWins { get; set; } = -1;
-    public int ScoreToVictory { get; set; } = -1;
-    public bool SendScoreChecksImmediately {get; set;} = true;
-
-    public TribeType[] GetPlayableTribes()
-    {
-        return PlayableTribes.Select(t => (TribeType)Enum.Parse(typeof(TribeType), t)).ToArray();
-    }
-
-    public void SetSlotData(Dictionary<string, object> slotData, ManualLogSource logger)
-    {
-        PlayableTribes = ((JArray)slotData["playable_tribes"]).Select(t => t.ToString()).ToArray();
-        logger.LogInfo($"Slot Data - Playable Tribes: {string.Join(", ", PlayableTribes)}");
-
-        UniqueTribesWins = (int)(long)slotData["unique_tribes_wins"];
-        logger.LogInfo($"Slot Data - Unique Tribes Wins: {UniqueTribesWins}");
-
-        ScoreToVictory = (int)(long)slotData["score_to_victory"];
-        logger.LogInfo($"Slot Data - Score to Victory: {ScoreToVictory}");
-
-        SendScoreChecksImmediately = (long)slotData["send_score_checks_immediately"] == 1;
-        logger.LogInfo($"Slot Data - Send Score Checks Immediately: {SendScoreChecksImmediately}");
-    }
-
-    public override string ToString()
-    {
-        return $"Playable Tribes: {string.Join(", ", PlayableTribes)}\n" +
-               $"Unique Tribes Wins: {UniqueTribesWins}\n" +
-               $"Score to Victory: {ScoreToVictory}\n" +
-               $"Send Score Checks Immediately: {SendScoreChecksImmediately}";
-    }
-}

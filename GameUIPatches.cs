@@ -51,6 +51,7 @@ public static class GameUIPatches
     [HarmonyPatch(typeof(TribePickerScreen_UI2), nameof(TribePickerScreen_UI2.Init))]
     private static void TribePickerScreen_UI2_Init_Postfix(TribePickerScreen_UI2 __instance, RectTransform transform)
     {
+        if (!Archipelago.IsConnected) { return; }
         logger.LogInfo($"TribePickerScreen_UI2.Init called");
         var backButton = __instance.backButton;
         backButton.ClearCallbacks();
@@ -63,16 +64,4 @@ public static class GameUIPatches
         uiManager?.ShowScreen(mainScreen);
         
     }
-
-    // --- EXPLORATION ---
-
-    // In game > Game Stats
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(GameModeUtils), nameof(GameModeUtils.GetTitle))]
-    // private static void GameModeUtils_GetTitle_Prefix(GameMode gameMode, ref string __result)
-    // {
-    //     logger.LogInfo($"GameModeUtils.GetTitle called for game mode: {gameMode}. Result: {__result}");
-    // }
-
-    
 }
