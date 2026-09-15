@@ -81,16 +81,39 @@ public static class Archipelago
         logger.LogInfo("Disconnected from Archipelago");
     }
 
+    public static TechData.Type[] GetReceivedTechs(TribeType tribe)
+    {
+        TechData.Type[] result = Array.Empty<TechData.Type>();
+        if (!IsConnected || Session is null) { return result; }
+        var allItems = Session.Items.AllItemsReceived;
+
+        string itemPrefix = (SlotData.TechnologyItems == TechnologyOption.by_tribe ? $"{tribe} - " : "") + "Technology Unlock - ";
+        foreach (var item in allItems)
+        {
+            if (item.ItemName.StartsWith(itemPrefix))
+            {
+                string techName = item.ItemName[itemPrefix.Length..];
+                if (Enum.TryParse(techName, out TechData.Type techType))
+                {
+                    result = result.Append(techType).ToArray();
+                }
+            }
+        }
+        return result;
+    }
+
     public static TribeType[] GetReceivedTribes()
     {
         TribeType[] result = Array.Empty<TribeType>();
         if (!IsConnected || Session is null) { return result; }
         var allItems = Session.Items.AllItemsReceived;
+
+        string itemPrefix = $"Tribe Unlock - ";
         foreach (var item in allItems)
         {
-            if (item.ItemName.StartsWith("Tribe Unlock - "))
+            if (item.ItemName.StartsWith(itemPrefix))
             {
-                string tribeName = item.ItemName["Tribe Unlock - ".Length..];
+                string tribeName = item.ItemName[itemPrefix.Length..];
                 if (Enum.TryParse(tribeName, out TribeType tribeType))
                 {
                     result = result.Append(tribeType).ToArray();
@@ -125,6 +148,36 @@ public static class Archipelago
         string itemName = info.ItemDisplayName ?? info.ItemName ?? $"Item ID: {info.ItemId}";
         string locationName = info.LocationDisplayName ?? info.LocationName ?? $"Location ID: {info.LocationId}";
         logger.LogMessage($"AP Item: Received {itemName} from {info.Player} at {locationName}");
+
+        int tribeIdx = (int)(info.ItemId / 1000);
+        int itemIdx = (int)(info.ItemId % 1000);
+
+        // Tribe Unlock Item
+        if (itemIdx == 0 && tribeIdx != 0)
+        {
+            if (Enum.IsDefined(typeof(TribeType), tribeIdx))
+            {
+                TribeType tribeType = (TribeType)tribeIdx;
+                logger.LogInfo($"↪ Received Tribe Unlock: {tribeType}");
+            }
+        }
+
+        // Technology Unlock Item
+        if (itemIdx >= TECH_OFFSET && itemIdx < TECH_OFFSET + 100)
+        {
+            int techIndex = itemIdx - TECH_OFFSET;
+            if (!Enum.IsDefined(typeof(TechData.Type), techIndex)) { return; }
+            TechData.Type techType = (TechData.Type)techIndex;
+
+            logger.LogInfo($"↪ Received Technology: {techType}");
+            TechPatches.TryReceiveTech(tribeIdx, techType);
+        }
+
+        // Filler Item
+        if (itemIdx >= FILLER_OFFSET && itemIdx < FILLER_OFFSET + 100)
+        {
+            logger.LogInfo($"↪ Received Filler Item: {itemIdx}");
+        }
 
         helper.DequeueItem();
     }

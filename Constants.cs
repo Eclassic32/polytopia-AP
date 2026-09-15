@@ -77,6 +77,7 @@ public class Constants
     }
 
     public static readonly int TECH_OFFSET = 500;
+    public static readonly int FILLER_OFFSET = 900;
 
     public enum TechnologyOption
     {

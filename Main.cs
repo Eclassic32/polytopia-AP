@@ -13,7 +13,7 @@ public static class Main
 {
     public static ManualLogSource logger = new("apmw: Main");
     public static GameState? gameState;
-    public static PlayerState playerState = new();
+    public static PlayerState? playerState;
 
     public static void Load(ManualLogSource logger)
     {
@@ -49,6 +49,10 @@ public class ScorePatches
     [HarmonyPatch(typeof(EndMatchCommand), nameof(EndMatchCommand.Execute))]
     private static void EndMatchCommand_Execute_Postfix(EndMatchCommand __instance, GameState state)
     {
+        if (Main.playerState == null) { // shouldnt happen
+            logger.LogError("PlayerState is not found");
+            return;
+        }
         PlayerState player = Main.playerState;
         // state.TryGetWinner(out PlayerState winner);
 
@@ -73,7 +77,7 @@ public class ScorePatches
             return; 
         }
         
-        PlayerState player = Main.playerState;
+        PlayerState player = Main.playerState ?? gameState.GetFirstHumanPlayer();
         TribeType tribe = player.tribe;
         float score = __instance.score;
         int score_K = (int)score/1000;
@@ -158,16 +162,70 @@ public class TechPatches
 {
     private readonly static ManualLogSource logger = Main.logger;
 
-    // Called when player learns a tech, including basic and starting tech
+    // Called when match starts, to learn all received techs
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(ActionUtils), nameof(ActionUtils.LearnTech))]
-    private static void ActionUtils_LearnTech_Postfix(GameState gameState, PlayerState playerState, TechData.Type type, int cost, bool shouldUseActions)
+    [HarmonyPatch(typeof(StartMatchAction), nameof(StartMatchAction.ExecuteDefault))]
+    [HarmonyPatch(typeof(StartMatchAction), nameof(StartMatchAction.Execute))]
+    private static void StartMatchAction_Execute_Postfix(StartMatchAction __instance, GameState gameState)
     {
         if (!Archipelago.IsConnected) { return; }
-        PlayerState player = Main.playerState;
-        if (playerState.Id != player.Id || cost == 0) { return; }
-        logger.LogInfo($"ActionUtils.LearnTech called. Player: {playerState.UserName} ({playerState.tribe}), type: {type}, cost: {cost}, shouldUseActions: {shouldUseActions}.");
+        PlayerState player = Main.playerState ?? gameState.GetFirstHumanPlayer();
+        logger.LogInfo($"StartMatchAction.Execute called. Player: {player.UserName} ({player.tribe})");
+        TechData.Type[] receivedTechs = Archipelago.GetReceivedTechs(player.tribe);
+        foreach (TechData.Type tech in receivedTechs)
+        {
+            ActionUtils.LearnTech(gameState, player, tech, 0, false);
+            logger.LogInfo($"↪ Learned Tech: {tech}");
+        }
+    }
+
+
+    // Called when player learns a tech, including basic and starting tech
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ActionUtils), nameof(ActionUtils.LearnTech))]
+    private static bool ActionUtils_LearnTech_Prefix(Il2CppSystem.Object __instance, GameState gameState, PlayerState playerState, TechData.Type type, int cost, bool shouldUseActions)
+    {
+        string log(string msg = "") => $"ActionUtils.LearnTech called. {msg}\nPlayer: {playerState.UserName} ({playerState.tribe}), tech: {type}, cost: {cost}, shouldUseActions: {shouldUseActions}.";
+
+        if (!Archipelago.IsConnected) { return true; }
+        PlayerState player = Main.playerState ?? gameState.GetFirstHumanPlayer();
+        if (playerState.Id != player.Id) { 
+            logger.LogInfo(log($"Not Human Player: ({player.UserName}) [{player.Id}] vs ({playerState.UserName}) [{playerState.Id}])"));
+            return true; 
+        }
+
+        TechData.Type[] receivedTechs = Archipelago.GetReceivedTechs(playerState.tribe);
+        if (receivedTechs.Contains(type)) { return true; }
+
+        if (cost == 0)
+        {
+            if (type == TechData.Type.Basic) { return true; }
+            if (shouldUseActions) { // TEST: is this tech found in treasure?
+                logger.LogInfo(log("Treasure tech?"));
+                return true; 
+            } 
+            return false; // Prevents learning the starting tech
+        }
+        logger.LogInfo(log());
         Archipelago.SendLocations.Technology(playerState.tribe, type);
+        return false;
+
+        
+    }
+
+    public static void TryReceiveTech(int tribeIdx, TechData.Type tech)
+    {
+        if (!Archipelago.IsConnected) { return; }
+        if (Main.gameState == null || Main.playerState == null) { return; }
+        GameState gameState = Main.gameState;
+        PlayerState player = Main.playerState;
+
+        if (tribeIdx != 0 && player.tribe != Constants.APTribeOrder[tribeIdx - 1]) { 
+            logger.LogInfo($"TryReceiveTech: Tribe mismatch. Player: {player.tribe}, Received Tribe: {Constants.APTribeOrder[tribeIdx]} ({tribeIdx})");
+            return; }
+
+        ActionUtils.LearnTech(gameState, player, tech, 0, false);
+        logger.LogInfo($"TryReceiveTech: Learned Tech: {tech}");
     }
 }
 
