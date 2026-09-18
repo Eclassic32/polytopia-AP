@@ -18,21 +18,13 @@ namespace PolytopiaArchipelagoMW;
 
 public static class APUI
 {
-    private static ManualLogSource logger = new("apmw: APUI");
+    private static ManualLogSource logger = Main.logger;
     private static UIRoundButton_UI2? archipelagoModButton = null;
-    private static string APAddress = "localhost:38281";
-    private static string APSlotName = "Player_Polytopia";
+
+    private static string APAddress = Main.isDebugBuild ? "localhost:38281" : "archipelago.gg:38281";
+    private static string APSlotName = Main.isDebugBuild ? "Small" : "Player";
+
     private static string? APPassword = null;
-
-
-    public static void Load(ManualLogSource logger)
-    {
-        Harmony.CreateAndPatchAll(typeof(APUI));
-
-        APUI.logger = logger;
-        logger.LogInfo("APUI loaded");
-    }
-
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.Init))]

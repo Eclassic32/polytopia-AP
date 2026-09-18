@@ -15,6 +15,12 @@ public static class Main
     public static GameState? gameState;
     public static PlayerState? playerState;
 
+# if DEBUG
+    public static readonly bool isDebugBuild = true;
+# else
+    public static readonly bool isDebugBuild = false;
+# endif
+
     public static void Load(ManualLogSource logger)
     {
         Harmony.CreateAndPatchAll(typeof(Main));
@@ -22,9 +28,12 @@ public static class Main
         Harmony.CreateAndPatchAll(typeof(TribePatches));
         Harmony.CreateAndPatchAll(typeof(TechPatches));
         Harmony.CreateAndPatchAll(typeof(ExplorationPatches));
+        Harmony.CreateAndPatchAll(typeof(APUI));
+        Harmony.CreateAndPatchAll(typeof(GameUIPatches));
+        // Harmony.CreateAndPatchAll(typeof(OtherSnippets)); 
 
         Main.logger = logger;
-        logger.LogInfo("Archipelago Mod Loaded");
+        logger.LogInfo("Archipelago Mod Loaded" + (isDebugBuild ? " (DEBUG BUILD)" : ""));
     }
 
     // Get GameState 

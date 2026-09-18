@@ -10,16 +10,8 @@ using UnityEngine.Rendering;
 namespace PolytopiaArchipelagoMW;
 public static class GameUIPatches
 {
-    private static ManualLogSource logger = new("apmw: GameUIPatches");
+    private static ManualLogSource logger = Main.logger;
     private static UIManager? uiManager;
-
-    public static void Load(ManualLogSource logger)
-    {
-        Harmony.CreateAndPatchAll(typeof(GameUIPatches));
-
-        GameUIPatches.logger = logger;
-        logger.LogInfo("GameUIPatches loaded");
-    }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(StartScreen_UI2), nameof(StartScreen_UI2.OnShow))]

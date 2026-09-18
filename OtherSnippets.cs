@@ -5,10 +5,10 @@ using PolytopiaBackendBase.Game;
 using UnityEngine;
 using Il2CppInterop.Runtime.InteropTypes;
 
-namespace OtherSnippets;
+namespace PolytopiaArchipelagoMW;
 public static class OtherSnippets
 {
-    private static ManualLogSource logger = new("apmw: OtherSnippets");
+    private static ManualLogSource logger = Main.logger;
 
     private static TribeType[] enabledTribes = new TribeType[]
     {
