@@ -1,0 +1,89 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        // {
+        //     "label": "Load Polytopia ENV",
+        //     "type": "shell",
+        //     "command": "powershell.exe",
+        //     "args": [
+        //         "-NoProfile",
+        //         "-ExecutionPolicy",
+        //         "Bypass",
+        //         "-Command",
+        //         "& '${workspaceFolder}\\.vscode\\load_env.ps1'"
+        //     ],
+        //     "problemMatcher": []
+        // },
+        {
+            "label": "Polytopia: Copy Resources",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& '${workspaceFolder}\\.vscode\\load_env.ps1'; Copy-Item -Path \"$env:POLYTOPIA_RESOURCES\\*\" -Destination \"$env:POLYTOPIA_MOD_DIR\" -Recurse -Force"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Polytopia: Copy DLL",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& '${workspaceFolder}\\.vscode\\load_env.ps1'; Copy-Item -Path \"$env:POLYTOPIA_DEBUG_DLL\" -Destination \"$env:POLYTOPIA_MOD_DIR\\PolytopiaArchipelagoMW.dll\" -Force"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Polytopia: Copy Build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Polytopia: Copy Resources",
+                "Polytopia: Copy DLL"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Polytopia: Copy X DLL",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& '${workspaceFolder}\\.vscode\\load_env.ps1'; Copy-Item -Path \"$env:POLYTOPIA_X_DLL\" -Destination \"$env:POLYTOPIA_MOD_DIR\\PolytopiaArchipelagoMW.dll\" -Force"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Package X into Polymod",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& '${workspaceFolder}\\.vscode\\load_env.ps1'; & '${workspaceFolder}\\.vscode\\build_x.ps1' \"$env:POLYTOPIA_MOD_DIR\""
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Polytopia: Package X Build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Polytopia: Copy Resources",
+                "Polytopia: Copy X DLL",
+                "Package X into Polymod"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
