@@ -46,7 +46,7 @@ public static class GameUIPatches
         if (!Archipelago.IsConnected) { return; }
         logger.LogInfo($"TribePickerScreen_UI2.Init called");
         var backButton = __instance.backButton;
-        backButton.ClearCallbacks();
+        // backButton.;
         backButton.OnClickedSignal.Add(DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(JumpToMain));
     }
 

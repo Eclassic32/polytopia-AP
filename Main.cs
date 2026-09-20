@@ -7,13 +7,14 @@ using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppSystem.Collections.Generic;
 using Archipelago.MultiClient.Net.Enums;
 using Polytopia.Data;
+using HarmonyLib.Tools;
 
 namespace PolytopiaArchipelagoMW;
 public static class Main
 {
     public static ManualLogSource logger = new("apmw: Main");
-    public static GameState? gameState;
-    public static PlayerState? playerState;
+    public static GameState? GameState {get; private set; } = null;
+    public static PlayerState? PlayerState {get; private set; } = null; 
 
 # if DEBUG
     public static readonly bool isDebugBuild = true;
@@ -36,7 +37,7 @@ public static class Main
         logger.LogInfo("Archipelago Mod Loaded" + (isDebugBuild ? " (DEBUG BUILD)" : ""));
     }
 
-    // Get GameState 
+    // Get GameState and PlayerState
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameManager), nameof(GameManager.OnLevelLoaded))]
     private static void GameManager_OnLevelLoaded_Postfix(GameManager __instance)
@@ -44,8 +45,8 @@ public static class Main
         logger.LogInfo("GameManager.OnLevelLoaded called.");
         Archipelago.SetClientState(ArchipelagoClientState.ClientPlaying);
         
-        gameState = __instance.client.GameState;
-        playerState = gameState.GetFirstHumanPlayer();
+        GameState = __instance.client.GameState;
+        PlayerState = GameState.GetFirstHumanPlayer();
     }
 }
 
@@ -58,11 +59,11 @@ public class ScorePatches
     [HarmonyPatch(typeof(EndMatchCommand), nameof(EndMatchCommand.Execute))]
     private static void EndMatchCommand_Execute_Postfix(EndMatchCommand __instance, GameState state)
     {
-        if (Main.playerState == null) { // shouldnt happen
+        if (Main.PlayerState == null) { // shouldnt happen
             logger.LogError("PlayerState is not found");
             return;
         }
-        PlayerState player = Main.playerState;
+        PlayerState player = Main.PlayerState;
         // state.TryGetWinner(out PlayerState winner);
 
         uint finalScore = player.score;
@@ -80,13 +81,13 @@ public class ScorePatches
     {
         if (!Archipelago.IsConnected || !Archipelago.SlotData.SendScoreChecksImmediately) { return; }
 
-        GameState? gameState = Main.gameState;
+        GameState? gameState = Main.GameState;
         if (gameState == null) {
             logger.LogWarning("GameState is not found");
             return; 
         }
         
-        PlayerState player = Main.playerState ?? gameState.GetFirstHumanPlayer();
+        PlayerState player = Main.PlayerState ?? gameState.GetFirstHumanPlayer();
         TribeType tribe = player.tribe;
         float score = __instance.score;
         int score_K = (int)score/1000;
@@ -178,7 +179,7 @@ public class TechPatches
     private static void StartMatchAction_Execute_Postfix(StartMatchAction __instance, GameState gameState)
     {
         if (!Archipelago.IsConnected) { return; }
-        PlayerState player = Main.playerState ?? gameState.GetFirstHumanPlayer();
+        PlayerState player = Main.PlayerState ?? gameState.GetFirstHumanPlayer();
         logger.LogInfo($"StartMatchAction.Execute called. Player: {player.UserName} ({player.tribe})");
         TechData.Type[] receivedTechs = Archipelago.GetReceivedTechs(player.tribe);
         foreach (TechData.Type tech in receivedTechs)
@@ -197,7 +198,7 @@ public class TechPatches
         string log(string msg = "") => $"ActionUtils.LearnTech called. {msg}\nPlayer: {playerState.UserName} ({playerState.tribe}), tech: {type}, cost: {cost}, shouldUseActions: {shouldUseActions}.";
 
         if (!Archipelago.IsConnected) { return true; }
-        PlayerState player = Main.playerState ?? gameState.GetFirstHumanPlayer();
+        PlayerState player = Main.PlayerState ?? gameState.GetFirstHumanPlayer();
         if (playerState.Id != player.Id) { 
             logger.LogInfo(log($"Not Human Player: ({player.UserName}) [{player.Id}] vs ({playerState.UserName}) [{playerState.Id}])"));
             return true; 
@@ -225,9 +226,9 @@ public class TechPatches
     public static void TryReceiveTech(int tribeIdx, TechData.Type tech)
     {
         if (!Archipelago.IsConnected) { return; }
-        if (Main.gameState == null || Main.playerState == null) { return; }
-        GameState gameState = Main.gameState;
-        PlayerState player = Main.playerState;
+        if (Main.GameState == null || Main.PlayerState == null) { return; }
+        GameState gameState = Main.GameState;
+        PlayerState player = Main.PlayerState;
 
         if (tribeIdx != 0 && player.tribe != Constants.APTribeOrder[tribeIdx - 1]) { 
             logger.LogInfo($"TryReceiveTech: Tribe mismatch. Player: {player.tribe}, Received Tribe: {Constants.APTribeOrder[tribeIdx]} ({tribeIdx})");
