@@ -24,7 +24,7 @@ public class Constants
         TribeType.Cymanti,
     }; 
     
-    public static long TribeSpecificLocationID(TribeType tribe, int locationID)
+    public static long TribeSpecificID(TribeType tribe, int locationID)
     {
         int APTribeIdx = Array.IndexOf(APTribeOrder, tribe) + 1;
         return (APTribeIdx * 1000) + locationID;

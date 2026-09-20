@@ -102,6 +102,20 @@ public static class Archipelago
         return result;
     }
 
+    public static bool IsTechItemReceived(TribeType tribe, TechData.Type techType)
+    {
+        if (!IsConnected || Session is null) { return true; }
+        long itemID = TribeSpecificID(SlotData.TechnologyItems == TechnologyOption.by_tribe ? tribe : 0, (int)techType + TECH_OFFSET);
+        return Session.Items.AllItemsReceived.Any(item => item.ItemId == itemID);
+    }
+
+    public static bool IsTechLocationSent(TribeType tribe, TechData.Type techType)
+    {
+        if (!IsConnected || Session is null) { return true; }
+        long locationID = TribeSpecificID(SlotData.TechnologyLocations == TechnologyOption.by_tribe ? tribe : 0, (int)techType + TECH_OFFSET);
+        return Session.Locations.AllLocationsChecked.Contains(locationID);
+    }
+
     public static TribeType[] GetReceivedTribes()
     {
         TribeType[] result = Array.Empty<TribeType>();
@@ -133,7 +147,7 @@ public static class Archipelago
         foreach (TribeType tribe in playableTribes)
         {
             int tribeIndex = Array.IndexOf(APTribeOrder, tribe) + 1;
-            long victoryLocationID = TribeSpecificLocationID(tribe, 0);
+            long victoryLocationID = TribeSpecificID(tribe, 0);
             if (checkedLocations.Contains(victoryLocationID))
             {
                 result = result.Append(tribe).ToArray();
@@ -205,8 +219,8 @@ public static class Archipelago
         {
             if (!IsConnected || Session is null) { return; }
             long[] locationIDs = new long[2]; 
-            locationIDs[0] = TribeSpecificLocationID(0, (int)techType + TECH_OFFSET);
-            locationIDs[1] = TribeSpecificLocationID(tribe, (int)techType + TECH_OFFSET);
+            locationIDs[0] = TribeSpecificID(0, (int)techType + TECH_OFFSET);
+            locationIDs[1] = TribeSpecificID(tribe, (int)techType + TECH_OFFSET);
             logger.LogInfo($"Sending Technology Location Checks for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]" +
                             $" - Technology - {techType} ({(int)techType})\nLocation: {string.Join(", ", locationIDs)}");
             Session.Locations.CompleteLocationChecks(locationIDs);
@@ -225,7 +239,7 @@ public static class Archipelago
             long[] locationIDs = new long[score_K];
             for (int i = 0; i < locationIDs.Length; i++)
             {
-                locationIDs[i] = TribeSpecificLocationID(tribe, i+1);
+                locationIDs[i] = TribeSpecificID(tribe, i+1);
             }
 
             logger.LogInfo($"Sending Score Location Checks for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]" +
@@ -235,7 +249,7 @@ public static class Archipelago
 
             if (sendVictory && SlotData.ScoreToVictory < score_K)
             {
-                long victoryLocationID = TribeSpecificLocationID(tribe, 0);
+                long victoryLocationID = TribeSpecificID(tribe, 0);
                 logger.LogInfo($"Sending Victory Location Check ({victoryLocationID}) " + 
                                 $"for {tribe} [{Array.IndexOf(APTribeOrder, tribe)}]");
                 Session.Locations.CompleteLocationChecks(new long[] { victoryLocationID });
