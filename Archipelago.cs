@@ -104,14 +104,14 @@ public static class Archipelago
 
     public static bool IsTechItemReceived(TribeType tribe, TechData.Type techType)
     {
-        if (!IsConnected || Session is null) { return true; }
+        if (!IsConnected || Session is null || techType == TechData.Type.Basic) { return true; }
         long itemID = TribeSpecificID(SlotData.TechnologyItems == TechnologyOption.by_tribe ? tribe : 0, (int)techType + TECH_OFFSET);
         return Session.Items.AllItemsReceived.Any(item => item.ItemId == itemID);
     }
 
     public static bool IsTechLocationSent(TribeType tribe, TechData.Type techType)
     {
-        if (!IsConnected || Session is null) { return true; }
+        if (!IsConnected || Session is null || techType == TechData.Type.Basic) { return true; }
         long locationID = TribeSpecificID(SlotData.TechnologyLocations == TechnologyOption.by_tribe ? tribe : 0, (int)techType + TECH_OFFSET);
         return Session.Locations.AllLocationsChecked.Contains(locationID);
     }

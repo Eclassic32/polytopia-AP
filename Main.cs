@@ -172,22 +172,22 @@ public class TechPatches
 {
     private readonly static ManualLogSource logger = Main.logger;
 
-    // Called when match starts, to learn all received techs
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(StartMatchAction), nameof(StartMatchAction.ExecuteDefault))]
-    [HarmonyPatch(typeof(StartMatchAction), nameof(StartMatchAction.Execute))]
-    private static void StartMatchAction_Execute_Postfix(StartMatchAction __instance, GameState gameState)
-    {
-        if (!Archipelago.IsConnected) { return; }
-        PlayerState player = Main.PlayerState ?? gameState.GetFirstHumanPlayer();
-        logger.LogInfo($"StartMatchAction.Execute called. Player: {player.UserName} ({player.tribe})");
-        TechData.Type[] receivedTechs = Archipelago.GetReceivedTechs(player.tribe);
-        foreach (TechData.Type tech in receivedTechs)
-        {
-            ActionUtils.LearnTech(gameState, player, tech, 0, false);
-            logger.LogInfo($"↪ Learned Tech: {tech}");
-        }
-    }
+    // // Called when match starts, to learn all received techs
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(StartMatchAction), nameof(StartMatchAction.ExecuteDefault))]
+    // [HarmonyPatch(typeof(StartMatchAction), nameof(StartMatchAction.Execute))]
+    // private static void StartMatchAction_Execute_Postfix(StartMatchAction __instance, GameState gameState)
+    // {
+    //     if (!Archipelago.IsConnected) { return; }
+    //     PlayerState player = Main.PlayerState ?? gameState.GetFirstHumanPlayer();
+    //     logger.LogInfo($"StartMatchAction.Execute called. Player: {player.UserName} ({player.tribe})");
+    //     TechData.Type[] receivedTechs = Archipelago.GetReceivedTechs(player.tribe);
+    //     foreach (TechData.Type tech in receivedTechs)
+    //     {
+    //         ActionUtils.LearnTech(gameState, player, tech, 0, false);
+    //         logger.LogInfo($"↪ Learned Tech: {tech}");
+    //     }
+    // }
 
 
     // Called when player learns a tech, including basic and starting tech
@@ -227,14 +227,14 @@ public class TechPatches
     {
         if (!Archipelago.IsConnected) { return; }
         if (Main.GameState == null || Main.PlayerState == null) { return; }
-        GameState gameState = Main.GameState;
-        PlayerState player = Main.PlayerState;
+        // GameState gameState = Main.GameState;
+        // PlayerState player = Main.PlayerState;
 
-        if (tribeIdx != 0 && player.tribe != Constants.APTribeOrder[tribeIdx - 1]) { 
-            logger.LogInfo($"TryReceiveTech: Tribe mismatch. Player: {player.tribe}, Received Tribe: {Constants.APTribeOrder[tribeIdx]} ({tribeIdx})");
-            return; }
+        // if (tribeIdx != 0 && player.tribe != Constants.APTribeOrder[tribeIdx - 1]) { 
+        //     logger.LogInfo($"TryReceiveTech: Tribe mismatch. Player: {player.tribe}, Received Tribe: {Constants.APTribeOrder[tribeIdx]} ({tribeIdx})");
+        //     return; }
 
-        ActionUtils.LearnTech(gameState, player, tech, 0, false);
+        // ActionUtils.LearnTech(gameState, player, tech, 0, false);
         logger.LogInfo($"TryReceiveTech: Learned Tech: {tech}");
     }
 }

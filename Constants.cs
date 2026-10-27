@@ -88,3 +88,48 @@ public class Constants
         by_tribe_and_action = 4
     }
 }
+
+public class Helpers
+{
+    public static List<T> ToList<T>(Il2CppSystem.Collections.Generic.List<T> il2cppList)
+    {
+        List<T> list = new();
+        foreach (var item in il2cppList)
+        {
+            list.Add(item);
+        }
+        return list;
+    }
+
+    public static Il2CppSystem.Collections.Generic.List<T> ToIl2CppList<T>(List<T> list)
+    {
+        var il2cppList = new Il2CppSystem.Collections.Generic.List<T>();
+        foreach (var item in list)
+        {
+            il2cppList.Add(item);
+        }
+        return il2cppList;
+    }
+
+#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+    public static Dictionary<key, value> ToDictionary<key, value>(Il2CppSystem.Collections.Generic.Dictionary<key, value> il2cppDict)
+    {
+        Dictionary<key, value> dict = new();
+        foreach (var kvp in il2cppDict)
+        {
+            dict.Add(kvp.Key, kvp.Value);
+        }
+        return dict;
+    }
+
+    public static Il2CppSystem.Collections.Generic.Dictionary<key, value> ToIl2CppDictionary<key, value>(Dictionary<key, value> dict)
+    {
+        var il2cppDict = new Il2CppSystem.Collections.Generic.Dictionary<key, value>();
+        foreach (var kvp in dict)
+        {
+            il2cppDict.Add(kvp.Key, kvp.Value);
+        }
+        return il2cppDict;
+    }
+}
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
